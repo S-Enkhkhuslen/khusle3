@@ -6,6 +6,7 @@ TagManager:
   tags:
   - OTank
   - enemy
+  - Gun
   layers:
   - Default
   - TransparentFX
