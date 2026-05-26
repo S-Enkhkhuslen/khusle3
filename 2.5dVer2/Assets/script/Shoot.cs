@@ -9,7 +9,7 @@ public class PlayerShoot : MonoBehaviour
     public float damage = 20f;
     public Transform gunPoint;
 
-    public float bulletSpeed = 40f;
+    public float bulletSpeed = 100f;
 
     void Update()
     {
@@ -21,14 +21,32 @@ public class PlayerShoot : MonoBehaviour
 
     void Shoot()
     {
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+
+        RaycastHit hit;
+
+        Vector3 targetPoint;
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            targetPoint = hit.point;
+        }
+        else
+        {
+            targetPoint = ray.GetPoint(100f);
+        }
+
+        Vector3 direction =
+            (targetPoint - gunPoint.position).normalized;
+
         GameObject bullet =
             Instantiate(bulletPrefab,
                         gunPoint.position,
-                        gunPoint.rotation);
+                        Quaternion.LookRotation(direction));
 
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
 
-        rb.linearVelocity = gunPoint.forward * bulletSpeed;
+        rb.linearVelocity = direction * bulletSpeed;
 
     }
 }
