@@ -288,8 +288,6 @@ MonoBehaviour:
   cameraTransform: {fileID: 1667875246}
   speed: 5
   jumpHeight: 3
-  dashSpeed: 5
-  dashCD: 3
   oxygenCapacity: 1000
   oxygen: 1000
   oxygenConsumptionRate: 1
@@ -353,6 +351,7 @@ MonoBehaviour:
   bulletPrefab: {fileID: 3404124531141372174, guid: 0c0deeb4e3a16544fbae0f8204e960a7, type: 3}
   damage: 20
   gunPoint: {fileID: 1055313247}
+  TPSAim: {fileID: 47683795}
   bulletSpeed: 80
 --- !u!114 &47683795
 MonoBehaviour:
@@ -374,6 +373,7 @@ MonoBehaviour:
   cam: {fileID: 1747680656}
   normalFOV: 60
   aimFOV: 10
+  isAiming: 0
 --- !u!1 &74953391
 GameObject:
   m_ObjectHideFlags: 0
