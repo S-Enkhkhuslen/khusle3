@@ -8,12 +8,12 @@ public class PlayerShoot : MonoBehaviour
     public GameObject bulletPrefab;
     public float damage = 20f;
     public Transform gunPoint;
+    [SerializeField] private TPSAim TPSAim;
 
     public float bulletSpeed = 100f;
-
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (TPSAim.isAiming && Input.GetMouseButtonDown(0))
         {
             Shoot();
         }

@@ -16,7 +16,7 @@ public class TPSAim : MonoBehaviour
     public float normalFOV = 60f;
     public float aimFOV = 30f;
 
-    bool isAiming;
+    public bool isAiming;
 
     void Start()
     {
