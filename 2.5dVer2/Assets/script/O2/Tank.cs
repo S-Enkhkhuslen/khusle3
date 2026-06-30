@@ -2,17 +2,30 @@ using UnityEngine;
 
 public class Tank : MonoBehaviour
 {
-    void Update()
+    [SerializeField] private float oxygenAmount = 100f;
+
+    private void Update()
     {
-        transform.Rotate(new Vector3(15, 30, 45) * Time.deltaTime);
+        transform.Rotate(new Vector3(15f, 30f, 45f) * Time.deltaTime);
     }
+
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "Player")
+        if (!other.CompareTag("Player"))
+            return;
+
+        Jetpack jetpack = other.GetComponentInParent<Jetpack>();
+
+        if (jetpack == null)
         {
-            Controller.Instance.AddOxygen();
-            Debug.Log("you add Your Oxygen");
-            Destroy(gameObject);
+            Debug.LogWarning("Jetpack component олдсонгүй.");
+            return;
         }
+
+        jetpack.AddOxygen(oxygenAmount);
+
+        Debug.Log($"Oxygen +{oxygenAmount}");
+
+        Destroy(gameObject);
     }
 }

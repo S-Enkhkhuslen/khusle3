@@ -1,128 +1,100 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(CharacterController))]
 public class Controller : MonoBehaviour
 {
+    [Header("Movement")]
     [SerializeField] private Transform cameraTransform;
-
     [SerializeField] private float speed = 5f;
-    [SerializeField] private float jumpHeight = 2f;
-    #region Oxygen values
-    [SerializeField] private float oxygenCapacity = 1000f;
-    [SerializeField] private float oxygen = 1000f;
-    [SerializeField] private float oxygenConsumptionRate = 1f;
-    [SerializeField] private float oxygenJetConsumptionRate = 2;
-    #endregion
-
-    [SerializeField] private float gravity = -9.8f;
     [SerializeField] private bool shouldFaceMoveDirection = false;
+    [SerializeField] private float rotationSpeed = 10f;
 
+    private CharacterController characterController;
+    private Jetpack jetpack;
+    private PlayerDash dash;
 
-    private CharacterController controller;
     private Vector2 moveInput;
-    private Vector3 velocity;
-    private static Controller instance;
-    public static Controller Instance
+    private Vector3 moveDirection;
+
+    public Vector3 MoveDirection => moveDirection;
+
+    private void Awake()
     {
-        get
-        {
-            if (instance == null)
-            {
-                Debug.LogError("Player is null");
-            }
-            return instance;
-        }
+        characterController = GetComponent<CharacterController>();
+        jetpack = GetComponent<Jetpack>();
+        dash = GetComponent<PlayerDash>();
     }
 
-    void Start()
+    public void OnMove(InputValue value)
     {
-        controller = GetComponent<CharacterController>();
+        moveInput = value.Get<Vector2>();
     }
 
-    #region Move
-    public void OnMove(InputAction.CallbackContext context)
+    private void Update()
     {
-        moveInput = context.ReadValue<Vector2>();
-        //Debug.Log($"Move Input: {moveInput}");
+        CalculateMoveDirection();
 
+        Vector3 finalVelocity = moveDirection * speed;
+
+        // Jetpack болон gravity-ийн босоо хөдөлгөөн
+        if (jetpack != null)
+        {
+            finalVelocity.y = jetpack.VerticalVelocity;
+        }
+
+        // Dash хийж байгаа үед энгийн хөдөлгөөнийг dash хөдөлгөөнөөр солино
+        if (dash != null && dash.IsDashing)
+        {
+            finalVelocity.x = dash.DashVelocity.x;
+            finalVelocity.z = dash.DashVelocity.z;
+        }
+
+        characterController.Move(finalVelocity * Time.deltaTime);
+
+        RotatePlayer();
     }
-    #endregion
-    #region Jump
-    public void OnJump
-        (InputAction.CallbackContext context)
-    {
-        // Debug.Log($"Jumping {context.performed} - Is Grounded: {controller.isGrounded}");
-        if (context.performed)
-        {
-            // Debug.Log("We are supposed to jump!");
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
-        }
-    }
-    #endregion
-
-    // Update is called once per frame
-    void Update()
+    private void CalculateMoveDirection()
     {
-        #region oxygen consumption
-        Debug.Log($"Oxygen Capacity: {oxygenCapacity}/Oxygen Level: {oxygen}");
-        if (oxygenCapacity >= oxygen)
+        if (cameraTransform == null)
         {
-            if (oxygen >= 0)
-            {
-                oxygen -= oxygenConsumptionRate * Time.deltaTime;
-            }
-            else
-            {
-                Debug.Log($"Out of oxygen! You died");
-            }
+            Debug.LogError("Camera Transform оруулаагүй байна!");
+            moveDirection = Vector3.zero;
+            return;
         }
-        else
-        {
-            oxygen = oxygenCapacity;
-        }
-        if (oxygenCapacity >= oxygen && oxygen >= 0 && Input.GetKeyDown(KeyCode.Space))
-        {
-            oxygen -= oxygenJetConsumptionRate;
-        }
-        #endregion
-        #region player movement
+
         Vector3 forward = cameraTransform.forward;
         Vector3 right = cameraTransform.right;
 
-        forward.y = 0;
-        right.y = 0;
+        forward.y = 0f;
+        right.y = 0f;
 
         forward.Normalize();
         right.Normalize();
 
-        Vector3 moveDirection = forward * moveInput.y + right * moveInput.x;
-        controller.Move(moveDirection * speed * Time.deltaTime);
+        moveDirection =
+            forward * moveInput.y +
+            right * moveInput.x;
 
-        if (shouldFaceMoveDirection && moveDirection.sqrMagnitude > 0.001f)
-        {
-            Quaternion toRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, toRotation, 10f * Time.deltaTime);
-        }
-
-        Vector3 move = new Vector3(0, moveInput.y, 0);
-        controller.Move(move * speed * Time.deltaTime);
-
-        //jump
-        velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
-        #endregion
+        moveDirection = Vector3.ClampMagnitude(moveDirection, 1f);
     }
 
-    private void Awake()
+    private void RotatePlayer()
     {
-        instance = this;
+        if (!shouldFaceMoveDirection)
+            return;
+
+        if (moveDirection.sqrMagnitude < 0.001f)
+            return;
+
+        Quaternion targetRotation =
+            Quaternion.LookRotation(moveDirection, Vector3.up);
+
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
+            targetRotation,
+            rotationSpeed * Time.deltaTime
+        );
     }
-    #region Tank Oxygen Value
-    public void AddOxygen()
-    {
-        oxygen = oxygen + 100;
-    }
-    #endregion
 }
-//1.jumpiig jet bolgoh
