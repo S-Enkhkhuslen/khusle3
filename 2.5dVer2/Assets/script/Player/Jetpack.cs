@@ -2,103 +2,83 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Oxygen))]
 public class Jetpack : MonoBehaviour
 {
-    [Header("Jetpack")]
+    [Header("Jetpack Settings")]
     [SerializeField] private float jetForce = 8f;
+    [SerializeField] private float oxygenConsumptionRate = 20f;
+
+    [Header("Gravity Settings")]
     [SerializeField] private float gravity = -9.8f;
     [SerializeField] private float groundedForce = -2f;
 
-    [Header("Oxygen")]
-    [SerializeField] private float oxygenCapacity = 1000f;
-    [SerializeField] private float oxygen = 1000f;
-    [SerializeField] private float normalOxygenConsumptionRate = 5f;
-    [SerializeField] private float jetOxygenConsumptionRate = 20f;
-
     private CharacterController characterController;
+    private Oxygen oxygen;
 
-    private bool isJetting;
+    private bool jetButtonHeld;
     private float verticalVelocity;
 
     public float VerticalVelocity => verticalVelocity;
-    public float Oxygen => oxygen;
-    public float OxygenCapacity => oxygenCapacity;
-    public bool IsJetting => isJetting;
+    public bool IsJetting { get; private set; }
 
     private void Awake()
     {
-        characterController = GetComponent<CharacterController>();
+        characterController =
+            GetComponent<CharacterController>();
 
-        oxygen = Mathf.Clamp(oxygen, 0f, oxygenCapacity);
+        oxygen =
+            GetComponent<Oxygen>();
     }
 
-    public void OnJump(InputValue value)
+    // Invoke Unity Events-ээс дуудагдана.
+    public void OnJump(InputAction.CallbackContext context)
     {
-        if (value.isPressed && oxygen > 0f)
-        {
-            isJetting = true;
-        }
+        // Space дарагдсан үед true,
+        // Space тавигдсан үед false болно.
+        jetButtonHeld = context.ReadValueAsButton();
     }
 
     private void Update()
     {
-        // Space тавихад jetpack унтарна
-        if (Keyboard.current != null &&
-            Keyboard.current.spaceKey.wasReleasedThisFrame)
-        {
-            isJetting = false;
-        }
-
-        ConsumeNormalOxygen();
         HandleJetpack();
         ApplyGravity();
     }
 
     private void HandleJetpack()
     {
-        if (isJetting && oxygen > 0f)
-        {
-            verticalVelocity = jetForce;
+        bool canUseJetpack =
+            jetButtonHeld &&
+            oxygen != null &&
+            oxygen.HasOxygen;
 
-            oxygen -= jetOxygenConsumptionRate * Time.deltaTime;
-            oxygen = Mathf.Max(oxygen, 0f);
+        IsJetting = canUseJetpack;
+
+        if (!IsJetting)
+        {
+            return;
         }
 
-        if (oxygen <= 0f)
-        {
-            oxygen = 0f;
-            isJetting = false;
-        }
+        verticalVelocity = jetForce;
+
+        oxygen.ConsumeOxygen(
+            oxygenConsumptionRate * Time.deltaTime
+        );
     }
 
     private void ApplyGravity()
     {
-        if (characterController.isGrounded && verticalVelocity < 0f)
+        if (characterController.isGrounded &&
+            verticalVelocity < 0f)
         {
             verticalVelocity = groundedForce;
-        }
-        else if (!isJetting)
-        {
-            verticalVelocity += gravity * Time.deltaTime;
-        }
-    }
-
-    private void ConsumeNormalOxygen()
-    {
-        if (oxygen <= 0f)
-        {
-            oxygen = 0f;
             return;
         }
 
-        oxygen -= normalOxygenConsumptionRate * Time.deltaTime;
-        oxygen = Mathf.Clamp(oxygen, 0f, oxygenCapacity);
-        Debug.Log(oxygen);
-    }
-
-    public void AddOxygen(float amount = 100f)
-    {
-        oxygen += amount;
-        oxygen = Mathf.Clamp(oxygen, 0f, oxygenCapacity);
+        if (!IsJetting)
+        {
+            verticalVelocity +=
+                gravity * Time.deltaTime;
+        }
     }
 }

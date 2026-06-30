@@ -37,29 +37,25 @@ public class TPSAim : MonoBehaviour
         Cursor.visible = false;
     }
 
-    private void Update()
+    public void OnAim(
+        InputAction.CallbackContext context)
     {
-        ReadAimInput();
-
-        if (IsAiming)
+        if (context.started)
         {
-            RotatePlayerTowardsCamera();
+            SetAimState(true);
+        }
+
+        if (context.canceled)
+        {
+            SetAimState(false);
         }
     }
 
-    private void ReadAimInput()
+    private void Update()
     {
-        if (Mouse.current == null)
+        if (IsAiming)
         {
-            SetAimState(false);
-            return;
-        }
-
-        bool wantsToAim = Mouse.current.rightButton.isPressed;
-
-        if (wantsToAim != IsAiming)
-        {
-            SetAimState(wantsToAim);
+            RotatePlayerTowardsCamera();
         }
     }
 
@@ -70,13 +66,17 @@ public class TPSAim : MonoBehaviour
         if (normalCamera != null)
         {
             normalCamera.Priority =
-                IsAiming ? inactivePriority : activePriority;
+                IsAiming
+                    ? inactivePriority
+                    : activePriority;
         }
 
         if (aimCamera != null)
         {
             aimCamera.Priority =
-                IsAiming ? activePriority : inactivePriority;
+                IsAiming
+                    ? activePriority
+                    : inactivePriority;
         }
 
         if (crosshair != null)
@@ -92,9 +92,9 @@ public class TPSAim : MonoBehaviour
             return;
         }
 
-        Vector3 lookDirection = mainCamera.transform.forward;
+        Vector3 lookDirection =
+            mainCamera.transform.forward;
 
-        // Player зөвхөн Y тэнхлэгээр эргэнэ.
         lookDirection.y = 0f;
 
         if (lookDirection.sqrMagnitude < 0.001f)
@@ -105,7 +105,10 @@ public class TPSAim : MonoBehaviour
         lookDirection.Normalize();
 
         Quaternion targetRotation =
-            Quaternion.LookRotation(lookDirection, Vector3.up);
+            Quaternion.LookRotation(
+                lookDirection,
+                Vector3.up
+            );
 
         transform.rotation = Quaternion.Slerp(
             transform.rotation,
