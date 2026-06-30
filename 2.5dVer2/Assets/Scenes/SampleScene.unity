@@ -137,7 +137,8 @@ GameObject:
   - component: {fileID: 47683794}
   - component: {fileID: 47683795}
   - component: {fileID: 47683797}
-  - component: {fileID: 47683796}
+  - component: {fileID: 47683798}
+  - component: {fileID: 47683799}
   m_Layer: 2
   m_Name: Player
   m_TagString: Player
@@ -225,7 +226,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
   m_Actions: {fileID: -944628639613478452, guid: 513e7b57410622245a4e0945a6978ae0, type: 3}
-  m_NotificationBehavior: 0
+  m_NotificationBehavior: 2
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
@@ -255,8 +256,8 @@ MonoBehaviour:
     m_ActionName: 'Gameplay/move[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 47683791}
-        m_TargetAssemblyTypeName: Controller, Assembly-CSharp
+      - m_Target: {fileID: 47683797}
+        m_TargetAssemblyTypeName: Jetpack, Assembly-CSharp
         m_MethodName: OnJump
         m_Mode: 0
         m_Arguments:
@@ -270,9 +271,37 @@ MonoBehaviour:
     m_ActionId: 454b3118-287d-470e-93fa-6897e8ad7108
     m_ActionName: 'Gameplay/jump[/Keyboard/space]'
   - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 55217b6b-9f12-4d89-9c1f-c66aec3b54af
-    m_ActionName: 'Gameplay/Dash[/Keyboard/leftShift]'
+      m_Calls:
+      - m_Target: {fileID: 47683798}
+        m_TargetAssemblyTypeName: Sprint, Assembly-CSharp
+        m_MethodName: OnSprint
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 597dbffe-f678-4f0b-8fe4-7399c92990b8
+    m_ActionName: 'Gameplay/Sprint[/Keyboard/leftShift]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 47683795}
+        m_TargetAssemblyTypeName: TPSAim, Assembly-CSharp
+        m_MethodName: OnAim
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 43674938-0fe4-404a-b357-0d6a7248d653
+    m_ActionName: 'Gameplay/Aim[/Mouse/rightButton]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Gameplay
@@ -372,21 +401,6 @@ MonoBehaviour:
   activePriority: 20
   inactivePriority: 10
   rotationSpeed: 15
---- !u!114 &47683796
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 47683784}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 667ef454f4a5f9946a8f49ea5833bd0f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerDash
-  dashSpeed: 15
-  dashDuration: 0.2
-  dashCooldown: 1
 --- !u!114 &47683797
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -400,12 +414,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Jetpack
   jetForce: 8
+  oxygenConsumptionRate: 25
   gravity: -9.8
   groundedForce: -2
+--- !u!114 &47683798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 47683784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87bdbb802d5c4854296f51bf2e55a38e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Sprint
+  sprintSpeedMultiplier: 2
+  oxygenConsumptionRate: 25
+--- !u!114 &47683799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 47683784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b319a1b3edde954bbc6650c4a5a6b0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Oxygen
   oxygenCapacity: 1000
   oxygen: 1000
-  normalOxygenConsumptionRate: 1
-  jetOxygenConsumptionRate: 2
+  normalConsumptionRate: 10
 --- !u!1 &74953391
 GameObject:
   m_ObjectHideFlags: 0

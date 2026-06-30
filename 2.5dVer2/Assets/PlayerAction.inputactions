@@ -25,9 +25,18 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Dash",
+                    "name": "Sprint",
                     "type": "Button",
-                    "id": "55217b6b-9f12-4d89-9c1f-c66aec3b54af",
+                    "id": "597dbffe-f678-4f0b-8fe4-7399c92990b8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Aim",
+                    "type": "Button",
+                    "id": "43674938-0fe4-404a-b357-0d6a7248d653",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -103,23 +112,34 @@
                 },
                 {
                     "name": "",
-                    "id": "3952cf90-34d3-4efc-959a-dcb7e4168ae8",
-                    "path": "<Keyboard>/space",
+                    "id": "40aac4b6-35fd-4442-b1f6-be5f48e0b6ee",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "jump",
+                    "action": "Aim",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "4005f074-c360-435e-a054-38dd9d9daae9",
-                    "path": "<Keyboard>/leftShift",
+                    "id": "70ef5de1-626e-4d07-b206-c726c9f38495",
+                    "path": "<Keyboard>/leftCtrl",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Dash",
+                    "action": "Sprint",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1a07612a-751e-4368-b22a-903f962437de",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "jump",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

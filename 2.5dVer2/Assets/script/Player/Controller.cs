@@ -14,27 +14,25 @@ public class Controller : MonoBehaviour
 
     private CharacterController characterController;
     private Jetpack jetpack;
-    private PlayerDash playerDash;
+    private Sprint sprint;
     private TPSAim tpsAim;
 
     private Vector2 moveInput;
     private Vector3 moveDirection;
 
-    // Dash script хөдөлгөөний чиглэлийг авахад хэрэглэнэ
     public Vector3 MoveDirection => moveDirection;
 
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
         jetpack = GetComponent<Jetpack>();
-        playerDash = GetComponent<PlayerDash>();
+        sprint = GetComponent<Sprint>();
         tpsAim = GetComponent<TPSAim>();
     }
 
-    // PlayerInput Behavior = Send Messages үед InputValue ашиглана
-    public void OnMove(InputValue value)
+    public void OnMove(InputAction.CallbackContext context)
     {
-        moveInput = value.Get<Vector2>();
+        moveInput = context.ReadValue<Vector2>();
     }
 
     private void Update()
@@ -48,10 +46,6 @@ public class Controller : MonoBehaviour
     {
         if (cameraTransform == null)
         {
-            Debug.LogError(
-                "Controller дээр Camera Transform оруулаагүй байна!"
-            );
-
             moveDirection = Vector3.zero;
             return;
         }
@@ -59,8 +53,6 @@ public class Controller : MonoBehaviour
         Vector3 cameraForward = cameraTransform.forward;
         Vector3 cameraRight = cameraTransform.right;
 
-        // Камер дээш, доош харсан байсан ч
-        // Player газар дээгүүр хөдөлнө
         cameraForward.y = 0f;
         cameraRight.y = 0f;
 
@@ -71,27 +63,26 @@ public class Controller : MonoBehaviour
             cameraForward * moveInput.y +
             cameraRight * moveInput.x;
 
-        // Диагоналиар явахад хурд ихсэхээс хамгаална
         moveDirection =
             Vector3.ClampMagnitude(moveDirection, 1f);
     }
 
     private void MovePlayer()
     {
-        Vector3 finalVelocity = moveDirection * speed;
+        float currentSpeed = speed;
 
-        // Jetpack болон gravity-ийн босоо хурд
-        if (jetpack != null)
+        if (sprint != null)
         {
-            finalVelocity.y = jetpack.VerticalVelocity;
+            currentSpeed *= sprint.SpeedMultiplier;
         }
 
-        // Dash хийж байгаа үед X, Z хөдөлгөөнийг
-        // Dash-ийн хурд, чиглэлээр солино
-        if (playerDash != null && playerDash.IsDashing)
+        Vector3 finalVelocity =
+            moveDirection * currentSpeed;
+
+        if (jetpack != null)
         {
-            finalVelocity.x = playerDash.DashVelocity.x;
-            finalVelocity.z = playerDash.DashVelocity.z;
+            finalVelocity.y =
+                jetpack.VerticalVelocity;
         }
 
         characterController.Move(
@@ -101,14 +92,11 @@ public class Controller : MonoBehaviour
 
     private void RotatePlayer()
     {
-        // Aim хийж байгаа үед TPSAim script
-        // Player-ийг камерын чиглэл рүү эргүүлнэ
         if (tpsAim != null && tpsAim.IsAiming)
         {
             return;
         }
 
-        // Aim хийхгүй үед хөдөлсөн чиглэл рүү эргэнэ
         if (!shouldFaceMoveDirection)
         {
             return;
