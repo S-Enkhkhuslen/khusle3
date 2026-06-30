@@ -136,6 +136,8 @@ GameObject:
   - component: {fileID: 47683792}
   - component: {fileID: 47683794}
   - component: {fileID: 47683795}
+  - component: {fileID: 47683797}
+  - component: {fileID: 47683796}
   m_Layer: 2
   m_Name: Player
   m_TagString: Player
@@ -224,7 +226,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
   m_Actions: {fileID: -944628639613478452, guid: 513e7b57410622245a4e0945a6978ae0, type: 3}
-  m_NotificationBehavior: 2
+  m_NotificationBehavior: 0
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
@@ -268,6 +270,10 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 454b3118-287d-470e-93fa-6897e8ad7108
     m_ActionName: 'Gameplay/jump[/Keyboard/space]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 55217b6b-9f12-4d89-9c1f-c66aec3b54af
+    m_ActionName: 'Gameplay/Dash[/Keyboard/leftShift]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Gameplay
@@ -287,13 +293,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Controller
   cameraTransform: {fileID: 1667875246}
   speed: 5
-  jumpHeight: 3
-  oxygenCapacity: 1000
-  oxygen: 1000
-  oxygenConsumptionRate: 1
-  oxygenJetConsumptionRate: 50
-  gravity: -15
   shouldFaceMoveDirection: 1
+  rotationSpeed: 10
 --- !u!54 &47683792
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -374,6 +375,40 @@ MonoBehaviour:
   normalFOV: 60
   aimFOV: 10
   isAiming: 0
+--- !u!114 &47683796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 47683784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 667ef454f4a5f9946a8f49ea5833bd0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDash
+  dashSpeed: 15
+  dashDuration: 0.2
+  dashCooldown: 1
+--- !u!114 &47683797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 47683784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5de15a6b683515408109acd68161820, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Jetpack
+  jetForce: 8
+  gravity: -9.8
+  groundedForce: -2
+  oxygenCapacity: 1000
+  oxygen: 1000
+  normalOxygenConsumptionRate: 1
+  jetOxygenConsumptionRate: 2
 --- !u!1 &74953391
 GameObject:
   m_ObjectHideFlags: 0
