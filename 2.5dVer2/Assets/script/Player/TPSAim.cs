@@ -1,60 +1,116 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using Unity.Cinemachine;
 
 public class TPSAim : MonoBehaviour
 {
-    public Transform normalCameraPos;
-    public Transform aimCameraPos;
+    [Header("Cinemachine Cameras")]
+    [SerializeField] private CinemachineCamera normalCamera;
+    [SerializeField] private CinemachineCamera aimCamera;
 
-    public Transform cameraTransform;
+    [Header("References")]
+    [SerializeField] private Camera mainCamera;
+    [SerializeField] private GameObject crosshair;
 
-    public float smoothSpeed = 10f;
+    [Header("Camera Priority")]
+    [SerializeField] private int activePriority = 20;
+    [SerializeField] private int inactivePriority = 10;
 
-    public GameObject crosshair;
+    [Header("Player Rotation")]
+    [SerializeField] private float rotationSpeed = 15f;
 
-    public Camera cam;
+    public bool IsAiming { get; private set; }
 
-    public float normalFOV = 60f;
-    public float aimFOV = 30f;
-
-    public bool isAiming;
-
-    void Start()
+    private void Awake()
     {
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
+    }
+
+    private void Start()
+    {
+        SetAimState(false);
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    void Update()
+    private void Update()
     {
-        isAiming = Input.GetMouseButton(1);
+        ReadAimInput();
 
-        if (isAiming)
+        if (IsAiming)
         {
-            cameraTransform.position =
-                Vector3.Lerp(cameraTransform.position,
-                             aimCameraPos.position,
-                             smoothSpeed * Time.deltaTime);
-
-            cam.fieldOfView =
-                Mathf.Lerp(cam.fieldOfView,
-                           aimFOV,
-                           smoothSpeed * Time.deltaTime);
-
-            crosshair.SetActive(true);
+            RotatePlayerTowardsCamera();
         }
-        else
+    }
+
+    private void ReadAimInput()
+    {
+        if (Mouse.current == null)
         {
-            cameraTransform.position =
-                Vector3.Lerp(cameraTransform.position,
-                             normalCameraPos.position,
-                             smoothSpeed * Time.deltaTime);
-
-            cam.fieldOfView =
-                Mathf.Lerp(cam.fieldOfView,
-                           normalFOV,
-                           smoothSpeed * Time.deltaTime);
-
-            crosshair.SetActive(false);
+            SetAimState(false);
+            return;
         }
+
+        bool wantsToAim = Mouse.current.rightButton.isPressed;
+
+        if (wantsToAim != IsAiming)
+        {
+            SetAimState(wantsToAim);
+        }
+    }
+
+    private void SetAimState(bool aiming)
+    {
+        IsAiming = aiming;
+
+        if (normalCamera != null)
+        {
+            normalCamera.Priority =
+                IsAiming ? inactivePriority : activePriority;
+        }
+
+        if (aimCamera != null)
+        {
+            aimCamera.Priority =
+                IsAiming ? activePriority : inactivePriority;
+        }
+
+        if (crosshair != null)
+        {
+            crosshair.SetActive(IsAiming);
+        }
+    }
+
+    private void RotatePlayerTowardsCamera()
+    {
+        if (mainCamera == null)
+        {
+            return;
+        }
+
+        Vector3 lookDirection = mainCamera.transform.forward;
+
+        // Player зөвхөн Y тэнхлэгээр эргэнэ.
+        lookDirection.y = 0f;
+
+        if (lookDirection.sqrMagnitude < 0.001f)
+        {
+            return;
+        }
+
+        lookDirection.Normalize();
+
+        Quaternion targetRotation =
+            Quaternion.LookRotation(lookDirection, Vector3.up);
+
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
+            targetRotation,
+            rotationSpeed * Time.deltaTime
+        );
     }
 }

@@ -13,7 +13,7 @@ public class PlayerShoot : MonoBehaviour
     public float bulletSpeed = 100f;
     void Update()
     {
-        if (TPSAim.isAiming && Input.GetMouseButtonDown(0))
+        if (TPSAim.IsAiming && Input.GetMouseButtonDown(0))
         {
             Shoot();
         }

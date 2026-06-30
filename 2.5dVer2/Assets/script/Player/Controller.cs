@@ -7,25 +7,31 @@ public class Controller : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private float speed = 5f;
-    [SerializeField] private bool shouldFaceMoveDirection = false;
+
+    [Header("Rotation")]
+    [SerializeField] private bool shouldFaceMoveDirection = true;
     [SerializeField] private float rotationSpeed = 10f;
 
     private CharacterController characterController;
     private Jetpack jetpack;
-    private PlayerDash dash;
+    private PlayerDash playerDash;
+    private TPSAim tpsAim;
 
     private Vector2 moveInput;
     private Vector3 moveDirection;
 
+    // Dash script хөдөлгөөний чиглэлийг авахад хэрэглэнэ
     public Vector3 MoveDirection => moveDirection;
 
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
         jetpack = GetComponent<Jetpack>();
-        dash = GetComponent<PlayerDash>();
+        playerDash = GetComponent<PlayerDash>();
+        tpsAim = GetComponent<TPSAim>();
     }
 
+    // PlayerInput Behavior = Send Messages үед InputValue ашиглана
     public void OnMove(InputValue value)
     {
         moveInput = value.Get<Vector2>();
@@ -34,24 +40,7 @@ public class Controller : MonoBehaviour
     private void Update()
     {
         CalculateMoveDirection();
-
-        Vector3 finalVelocity = moveDirection * speed;
-
-        // Jetpack болон gravity-ийн босоо хөдөлгөөн
-        if (jetpack != null)
-        {
-            finalVelocity.y = jetpack.VerticalVelocity;
-        }
-
-        // Dash хийж байгаа үед энгийн хөдөлгөөнийг dash хөдөлгөөнөөр солино
-        if (dash != null && dash.IsDashing)
-        {
-            finalVelocity.x = dash.DashVelocity.x;
-            finalVelocity.z = dash.DashVelocity.z;
-        }
-
-        characterController.Move(finalVelocity * Time.deltaTime);
-
+        MovePlayer();
         RotatePlayer();
     }
 
@@ -59,37 +48,82 @@ public class Controller : MonoBehaviour
     {
         if (cameraTransform == null)
         {
-            Debug.LogError("Camera Transform оруулаагүй байна!");
+            Debug.LogError(
+                "Controller дээр Camera Transform оруулаагүй байна!"
+            );
+
             moveDirection = Vector3.zero;
             return;
         }
 
-        Vector3 forward = cameraTransform.forward;
-        Vector3 right = cameraTransform.right;
+        Vector3 cameraForward = cameraTransform.forward;
+        Vector3 cameraRight = cameraTransform.right;
 
-        forward.y = 0f;
-        right.y = 0f;
+        // Камер дээш, доош харсан байсан ч
+        // Player газар дээгүүр хөдөлнө
+        cameraForward.y = 0f;
+        cameraRight.y = 0f;
 
-        forward.Normalize();
-        right.Normalize();
+        cameraForward.Normalize();
+        cameraRight.Normalize();
 
         moveDirection =
-            forward * moveInput.y +
-            right * moveInput.x;
+            cameraForward * moveInput.y +
+            cameraRight * moveInput.x;
 
-        moveDirection = Vector3.ClampMagnitude(moveDirection, 1f);
+        // Диагоналиар явахад хурд ихсэхээс хамгаална
+        moveDirection =
+            Vector3.ClampMagnitude(moveDirection, 1f);
+    }
+
+    private void MovePlayer()
+    {
+        Vector3 finalVelocity = moveDirection * speed;
+
+        // Jetpack болон gravity-ийн босоо хурд
+        if (jetpack != null)
+        {
+            finalVelocity.y = jetpack.VerticalVelocity;
+        }
+
+        // Dash хийж байгаа үед X, Z хөдөлгөөнийг
+        // Dash-ийн хурд, чиглэлээр солино
+        if (playerDash != null && playerDash.IsDashing)
+        {
+            finalVelocity.x = playerDash.DashVelocity.x;
+            finalVelocity.z = playerDash.DashVelocity.z;
+        }
+
+        characterController.Move(
+            finalVelocity * Time.deltaTime
+        );
     }
 
     private void RotatePlayer()
     {
-        if (!shouldFaceMoveDirection)
+        // Aim хийж байгаа үед TPSAim script
+        // Player-ийг камерын чиглэл рүү эргүүлнэ
+        if (tpsAim != null && tpsAim.IsAiming)
+        {
             return;
+        }
+
+        // Aim хийхгүй үед хөдөлсөн чиглэл рүү эргэнэ
+        if (!shouldFaceMoveDirection)
+        {
+            return;
+        }
 
         if (moveDirection.sqrMagnitude < 0.001f)
+        {
             return;
+        }
 
         Quaternion targetRotation =
-            Quaternion.LookRotation(moveDirection, Vector3.up);
+            Quaternion.LookRotation(
+                moveDirection,
+                Vector3.up
+            );
 
         transform.rotation = Quaternion.Slerp(
             transform.rotation,
