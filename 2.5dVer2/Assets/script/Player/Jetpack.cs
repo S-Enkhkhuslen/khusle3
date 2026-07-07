@@ -24,18 +24,12 @@ public class Jetpack : MonoBehaviour
 
     private void Awake()
     {
-        characterController =
-            GetComponent<CharacterController>();
-
-        oxygen =
-            GetComponent<Oxygen>();
+        characterController = GetComponent<CharacterController>();
+        oxygen = GetComponent<Oxygen>();
     }
 
-    // Invoke Unity Events-ээс дуудагдана.
     public void OnJump(InputAction.CallbackContext context)
     {
-        // Space дарагдсан үед true,
-        // Space тавигдсан үед false болно.
         jetButtonHeld = context.ReadValueAsButton();
     }
 
@@ -77,8 +71,7 @@ public class Jetpack : MonoBehaviour
 
         if (!IsJetting)
         {
-            verticalVelocity +=
-                gravity * Time.deltaTime;
+            verticalVelocity += gravity * Time.deltaTime;
         }
     }
 }

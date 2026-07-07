@@ -1,5 +1,6 @@
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerShoot : MonoBehaviour
 {
@@ -11,12 +12,21 @@ public class PlayerShoot : MonoBehaviour
     [SerializeField] private TPSAim TPSAim;
 
     public float bulletSpeed = 100f;
-    void Update()
+    public void OnShoot(InputAction.CallbackContext context)
     {
-        if (TPSAim.IsAiming && Input.GetMouseButtonDown(0))
+        if (!context.performed)
         {
-            Shoot();
+            return;
         }
+        if(TPSAim == null)
+        {
+            return;
+        }
+        if (!TPSAim.IsAiming)
+        {
+            return;
+        }
+        Shoot();
     }
 
     void Shoot()

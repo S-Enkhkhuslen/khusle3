@@ -31,6 +31,11 @@ public class Oxygen : MonoBehaviour
         //Debug.Log(oxygen);
     }
 
+    public void ChangeConsume(float amount)
+    {
+        normalConsumptionRate=normalConsumptionRate * amount;
+    }
+
     public bool ConsumeOxygen(float amount)
     {
         if (oxygen <= 0f)
