@@ -212,7 +212,7 @@ GameObject:
   - component: {fileID: 47683798}
   - component: {fileID: 47683799}
   - component: {fileID: 47683800}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -5660,7 +5660,7 @@ GameObject:
   - component: {fileID: 236922605}
   - component: {fileID: 236922604}
   - component: {fileID: 236922603}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5865,7 +5865,7 @@ GameObject:
   - component: {fileID: 367326728}
   - component: {fileID: 367326727}
   - component: {fileID: 367326726}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11243,13 +11243,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 592095575}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -35, y: 0, z: -15}
+  m_LocalRotation: {x: 0, y: -0.258819, z: 0, w: 0.9659259}
+  m_LocalPosition: {x: 0, y: 1, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1127730153}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -30, z: 0}
 --- !u!1 &632051839
 GameObject:
   m_ObjectHideFlags: 0
@@ -11862,7 +11862,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1055313247}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11896,7 +11896,7 @@ GameObject:
   - component: {fileID: 1127730154}
   - component: {fileID: 1127730155}
   - component: {fileID: 1127730156}
-  - component: {fileID: 1127730158}
+  - component: {fileID: 1127730159}
   m_Layer: 0
   m_Name: enemy
   m_TagString: enemy
@@ -11913,7 +11913,7 @@ Transform:
   m_GameObject: {fileID: 1127730152}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 53.2, y: 19, z: 57.3}
+  m_LocalPosition: {x: 259.8, y: 19, z: 795.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -11921,6 +11921,7 @@ Transform:
   - {fileID: 2093148455}
   - {fileID: 1287590423}
   - {fileID: 592095576}
+  - {fileID: 1200653626}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1127730154
@@ -11986,31 +11987,27 @@ MonoBehaviour:
   Tank: {fileID: 5552999208229983185, guid: c6b0be890022e6f4f83169019c95c62c, type: 3}
   damage: 10
   health: 100
---- !u!143 &1127730158
-CharacterController:
+--- !u!114 &1127730159
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1127730152}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.5
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d15c31ffa0e4ace4dbd889e3e8434bbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySensor
+  SeeLongSensor: 35
+  SeeShortSensor: 35
+  ViewAngle: 180
+  CenterSensorPoint: {fileID: 1200653626}
+  RightSensorPoint: {fileID: 1287590423}
+  LeftSensorPoint: {fileID: 592095576}
+  PlayerTransform: {fileID: 0}
+  ShouldFacePlayer: 1
+  RotateSpeed: 5
 --- !u!1 &1138716158
 GameObject:
   m_ObjectHideFlags: 0
@@ -12100,7 +12097,7 @@ GameObject:
   - component: {fileID: 1174932114}
   - component: {fileID: 1174932113}
   - component: {fileID: 1174932112}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12200,6 +12197,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1174932110}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1200653625
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1200653626}
+  m_Layer: 0
+  m_Name: CenterSensor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1200653626
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1200653625}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1127730153}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1287590422
 GameObject:
   m_ObjectHideFlags: 0
@@ -12224,13 +12252,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1287590422}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -35, y: 0, z: 15}
+  m_LocalRotation: {x: 0, y: 0.2588191, z: 0, w: 0.9659258}
+  m_LocalPosition: {x: 0, y: 1, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1127730153}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 30, z: 0}
 --- !u!1 &1539059600
 GameObject:
   m_ObjectHideFlags: 0
@@ -12710,7 +12738,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1817467832}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: cameraTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12744,7 +12772,7 @@ GameObject:
   - component: {fileID: 1833986468}
   - component: {fileID: 1833986467}
   - component: {fileID: 1833986466}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: gun
   m_TagString: Gun
   m_Icon: {fileID: 0}
@@ -22528,7 +22556,7 @@ GameObject:
   - component: {fileID: 2028525167}
   - component: {fileID: 2028525170}
   - component: {fileID: 2028525169}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Capsule (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
