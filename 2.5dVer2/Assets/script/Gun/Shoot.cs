@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerShoot : MonoBehaviour
 {
-
+    [SerializeField] private LayerMask shootMask;
     public Camera cam;
     public GameObject bulletPrefab;
     public float damage = 20f;
@@ -60,30 +60,3 @@ public class PlayerShoot : MonoBehaviour
 
     }
 }
-
-
-
-    /* public Camera cam;
-     public float range = 100f;
-
-     void Update()
-     {
-         if (Input.GetMouseButtonDown(0))
-         {
-             Shoot();
-         }
-     }
-
-     void Shoot()
-     {
-         RaycastHit hit;
-
-         if (Physics.Raycast(cam.transform.position,
-                             cam.transform.forward,
-                             out hit,
-                             100f))
-         {
-             Debug.Log(hit.transform.name);
-         }
-         
-     }*/
