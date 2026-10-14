@@ -119,6 +119,60 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &59602381
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 59602383}
+  - component: {fileID: 59602382}
+  m_Layer: 7
+  m_Name: FlyingE
+  m_TagString: enemy
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &59602382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59602381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d15c31ffa0e4ace4dbd889e3e8434bbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySensor
+  sensorPoint: {fileID: 479515536}
+  viewDistance: 25
+  viewAngle: 120
+  playerTargetHeight: 1
+  sensorMask:
+    serializedVersion: 2
+    m_Bits: 73
+  loseSightDelay: 1
+--- !u!4 &59602383
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59602381}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.73, y: 1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1763504114}
+  - {fileID: 479515536}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &166610974
 GameObject:
   m_ObjectHideFlags: 0
@@ -245,8 +299,8 @@ GameObject:
   - component: {fileID: 183777298}
   - component: {fileID: 183777297}
   - component: {fileID: 183777296}
-  m_Layer: 0
-  m_Name: RangeE
+  m_Layer: 7
+  m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -264,15 +318,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d15c31ffa0e4ace4dbd889e3e8434bbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySensor
-  SeeLongSensor: 35
-  SeeShortSensor: 35
-  ViewAngle: 90
-  CenterSensorPoint: {fileID: 0}
-  RightSensorPoint: {fileID: 0}
-  LeftSensorPoint: {fileID: 0}
-  PlayerTransform: {fileID: 0}
-  ShouldFacePlayer: 0
-  RotateSpeed: 5
+  sensorPoint: {fileID: 0}
+  viewDistance: 25
+  viewAngle: 120
+  playerTargetHeight: 1
+  sensorMask:
+    serializedVersion: 2
+    m_Bits: 0
+  loseSightDelay: 1
 --- !u!136 &183777297
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -361,12 +414,43 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 183777295}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.6, y: 1, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 606190027}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &385795567
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 385795568}
+  m_Layer: 7
+  m_Name: SensorPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &385795568
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 385795567}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 743203652}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &472811876
 GameObject:
@@ -460,6 +544,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &479515535
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 479515536}
+  m_Layer: 7
+  m_Name: SensorPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &479515536
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 479515535}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 59602383}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &547672067
 GameObject:
   m_ObjectHideFlags: 0
@@ -473,8 +588,8 @@ GameObject:
   - component: {fileID: 547672070}
   - component: {fileID: 547672069}
   - component: {fileID: 547672068}
-  m_Layer: 0
-  m_Name: MeleeE
+  m_Layer: 7
+  m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -492,15 +607,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d15c31ffa0e4ace4dbd889e3e8434bbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySensor
-  SeeLongSensor: 35
-  SeeShortSensor: 35
-  ViewAngle: 90
-  CenterSensorPoint: {fileID: 0}
-  RightSensorPoint: {fileID: 0}
-  LeftSensorPoint: {fileID: 0}
-  PlayerTransform: {fileID: 0}
-  ShouldFacePlayer: 0
-  RotateSpeed: 5
+  sensorPoint: {fileID: 0}
+  viewDistance: 25
+  viewAngle: 120
+  playerTargetHeight: 1
+  sensorMask:
+    serializedVersion: 2
+    m_Bits: 0
+  loseSightDelay: 1
 --- !u!136 &547672069
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -589,12 +703,151 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 547672067}
   serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 743203652}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &606190025
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 606190027}
+  - component: {fileID: 606190026}
+  m_Layer: 7
+  m_Name: RangeE
+  m_TagString: enemy
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &606190026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 606190025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d15c31ffa0e4ace4dbd889e3e8434bbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySensor
+  sensorPoint: {fileID: 1149715715}
+  viewDistance: 25
+  viewAngle: 120
+  playerTargetHeight: 1
+  sensorMask:
+    serializedVersion: 2
+    m_Bits: 73
+  loseSightDelay: 1
+--- !u!4 &606190027
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 606190025}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.6, y: 1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 183777300}
+  - {fileID: 1149715715}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &743203650
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 743203652}
+  - component: {fileID: 743203651}
+  m_Layer: 7
+  m_Name: MeleeE
+  m_TagString: enemy
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &743203651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743203650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d15c31ffa0e4ace4dbd889e3e8434bbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySensor
+  sensorPoint: {fileID: 385795568}
+  viewDistance: 25
+  viewAngle: 120
+  playerTargetHeight: 1
+  sensorMask:
+    serializedVersion: 2
+    m_Bits: 73
+  loseSightDelay: 1
+--- !u!4 &743203652
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 743203650}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 547672072}
+  - {fileID: 385795568}
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1149715714
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1149715715}
+  m_Layer: 7
+  m_Name: SensorPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1149715715
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1149715714}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 606190027}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1763504109
 GameObject:
@@ -609,8 +862,8 @@ GameObject:
   - component: {fileID: 1763504112}
   - component: {fileID: 1763504111}
   - component: {fileID: 1763504110}
-  m_Layer: 0
-  m_Name: FlyingE
+  m_Layer: 7
+  m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -628,15 +881,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d15c31ffa0e4ace4dbd889e3e8434bbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySensor
-  SeeLongSensor: 35
-  SeeShortSensor: 35
-  ViewAngle: 90
-  CenterSensorPoint: {fileID: 0}
-  RightSensorPoint: {fileID: 0}
-  LeftSensorPoint: {fileID: 0}
-  PlayerTransform: {fileID: 0}
-  ShouldFacePlayer: 0
-  RotateSpeed: 5
+  sensorPoint: {fileID: 0}
+  viewDistance: 25
+  viewAngle: 120
+  playerTargetHeight: 1
+  sensorMask:
+    serializedVersion: 2
+    m_Bits: 0
+  loseSightDelay: 1
 --- !u!136 &1763504111
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -725,12 +977,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1763504109}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.73, y: 1, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 59602383}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1845974684
 GameObject:
@@ -866,6 +1118,6 @@ SceneRoots:
   - {fileID: 472811879}
   - {fileID: 1845974686}
   - {fileID: 166610978}
-  - {fileID: 547672072}
-  - {fileID: 183777300}
-  - {fileID: 1763504114}
+  - {fileID: 743203652}
+  - {fileID: 606190027}
+  - {fileID: 59602383}
