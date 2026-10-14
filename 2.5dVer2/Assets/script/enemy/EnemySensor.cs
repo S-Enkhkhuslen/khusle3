@@ -2,28 +2,35 @@ using UnityEngine;
 
 public class EnemySensor : MonoBehaviour
 {
-    [Header("Sensor Information")]
-    [SerializeField] private float SeeLongSensor = 35f;
-    [SerializeField] private float SeeShortSensor = 35f;
-    [SerializeField] private float ViewAngle = 90f;
+    [Header("References")]
+    [SerializeField] private Transform sensorPoint;
 
-    [SerializeField] private Transform CenterSensorPoint;
-    [SerializeField] private Transform RightSensorPoint;
-    [SerializeField] private Transform LeftSensorPoint;
+    [Header("Sensor Settings")]
+    [SerializeField] private float viewDistance = 25f;
 
-    [Header("Enemy")]
-    [SerializeField] private Transform PlayerTransform;
-    [SerializeField] private bool ShouldFacePlayer = false;
+    [SerializeField, Range(0f, 360f)]
+    private float viewAngle = 120f;
 
-    [SerializeField] private float RotateSpeed = 5f;
+    [SerializeField] private float playerTargetHeight = 1f;
 
-    private bool PlayerDetected;
+    [SerializeField] private LayerMask sensorMask;
+
+    [Header("Detection Memory")]
+    [SerializeField] private float loseSightDelay = 1f;
 
 
-    void Start()
+    public bool PlayerDetected { get; private set; }
+
+    public Transform PlayerTransform { get; private set; }
+
+
+    private float lastSeenTime = -999f;
+
+
+    private void Start()
     {
-        // Player tag-тай объектыг автоматаар олно
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        GameObject player =
+            GameObject.FindGameObjectWithTag("Player");
 
         if (player != null)
         {
@@ -32,122 +39,126 @@ public class EnemySensor : MonoBehaviour
     }
 
 
-    private void MakeSensor()
+    private void Update()
     {
-        bool centerHit = CheckSensor(
-            CenterSensorPoint,
-            SeeLongSensor
-        );
-
-        bool leftHit = CheckSensor(
-            LeftSensorPoint,
-            SeeShortSensor
-        );
-
-        bool rightHit = CheckSensor(
-            RightSensorPoint,
-            SeeShortSensor
-        );
-
-
-        PlayerDetected =
-            centerHit ||
-            leftHit ||
-            rightHit;
-
-
-        if (PlayerDetected)
-        {
-            Debug.Log("PLAYER DETECTED");
-        }
+        DetectPlayer();
     }
-    private bool CheckSensor(Transform sensorPoint, float distance)
+
+
+    private void DetectPlayer()
     {
-        if (sensorPoint == null || PlayerTransform == null)
-            return false;
+        if (PlayerTransform == null || sensorPoint == null)
+        {
+            PlayerDetected = false;
+            return;
+        }
+
+
+        Vector3 targetPosition =
+            PlayerTransform.position
+            + Vector3.up * playerTargetHeight;
+
 
         Vector3 directionToPlayer =
-            PlayerTransform.position - sensorPoint.position;
-
-        float playerDistance = directionToPlayer.magnitude;
-
-        if (playerDistance > distance)
-            return false;
-
-        directionToPlayer.Normalize();
+            targetPosition - sensorPoint.position;
 
 
-        // Enemy-ийн урд талд байгаа эсэх
-        float angle = Vector3.Angle(
-            transform.forward,
-            directionToPlayer
-        );
-
-        if (angle > ViewAngle / 2f)
-            return false;
+        float distanceToPlayer =
+            directionToPlayer.magnitude;
 
 
-        Debug.DrawRay(
-            sensorPoint.position,
-            directionToPlayer * distance,
-            Color.red
-        );
-
-
-        RaycastHit hit;
-
-        if (Physics.Raycast(
-            sensorPoint.position,
-            directionToPlayer,
-            out hit,
-            distance))
+        // Хэт хол байгаа эсэх
+        if (distanceToPlayer <= viewDistance)
         {
-            if (hit.collider.CompareTag("Player"))
+            directionToPlayer.Normalize();
+
+
+            // Харах өнцөг
+            float angle =
+                Vector3.Angle(
+                    transform.forward,
+                    directionToPlayer
+                );
+
+
+            if (angle <= viewAngle / 2f)
             {
-                return true;
+                RaycastHit hit;
+
+
+                // Sensor -> Player чиглэлд Raycast
+                if (Physics.Raycast(
+                    sensorPoint.position,
+                    directionToPlayer,
+                    out hit,
+                    distanceToPlayer + 0.5f,
+                    sensorMask,
+                    QueryTriggerInteraction.Ignore))
+                {
+                    // Ray хамгийн түрүүн Player-д хүрсэн үү?
+                    if (hit.transform.root.CompareTag("Player"))
+                    {
+                        lastSeenTime = Time.time;
+
+                        Debug.DrawRay(
+                            sensorPoint.position,
+                            directionToPlayer * distanceToPlayer,
+                            Color.green
+                        );
+                    }
+                    else
+                    {
+                        Debug.DrawRay(
+                            sensorPoint.position,
+                            directionToPlayer * distanceToPlayer,
+                            Color.red
+                        );
+                    }
+                }
             }
         }
 
-        return false;
-    }
 
-    private void FacePlayer()
-    {
-        if (!ShouldFacePlayer)
-            return;
-
-        if (!PlayerDetected)
-            return;
-
-        if (PlayerTransform == null)
-            return;
-
-
-        Vector3 direction =
-            PlayerTransform.position - transform.position;
-
-        // Дээш доош харахгүй
-        direction.y = 0;
-
-
-        if (direction != Vector3.zero)
-        {
-            Quaternion targetRotation =
-                Quaternion.LookRotation(direction);
-
-            transform.rotation =
-                Quaternion.Slerp(
-                    transform.rotation,
-                    targetRotation,
-                    RotateSpeed * Time.deltaTime
-                );
-        }
+        PlayerDetected =
+            Time.time - lastSeenTime <= loseSightDelay;
     }
 
 
-    void Update()
+    private void OnDrawGizmosSelected()
     {
-        MakeSensor();
-        FacePlayer();
+        if (sensorPoint == null)
+            return;
+
+
+        Gizmos.DrawWireSphere(
+            sensorPoint.position,
+            viewDistance
+        );
+
+
+        float halfAngle =
+            viewAngle / 2f;
+
+
+        Vector3 leftDirection =
+            Quaternion.Euler(0f, -halfAngle, 0f)
+            * transform.forward;
+
+
+        Vector3 rightDirection =
+            Quaternion.Euler(0f, halfAngle, 0f)
+            * transform.forward;
+
+
+        Gizmos.DrawRay(
+            sensorPoint.position,
+            leftDirection * viewDistance
+        );
+
+
+        Gizmos.DrawRay(
+            sensorPoint.position,
+            rightDirection * viewDistance
+        );
     }
 }
