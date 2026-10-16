@@ -2,22 +2,37 @@ using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
 {
-    [SerializeField] private float HP=100;
-    [SerializeField] private float MaxHP=100;
-    public void TakeDamage(int amount)
-    {
-        HP -= amount;
-        Debug.Log("Player"+MaxHP +": " + HP);
+    [SerializeField] private float maxHealth = 100f;
 
-        if (HP <= 0)
+    private float currentHealth;
+
+
+    private void Start()
+    {
+        currentHealth = maxHealth;
+    }
+
+
+    public void TakeDamage(float damage)
+    {
+        currentHealth -= damage;
+
+
+        Debug.Log(
+            "Player Health: "
+            + currentHealth
+        );
+
+
+        if (currentHealth <= 0f)
         {
             Die();
         }
     }
 
-    void Die()
+
+    private void Die()
     {
-        Debug.Log("Player died");
-        // энд animation, restart гэх мэт хийж болно
+        Debug.Log("PLAYER DEAD");
     }
 }
