@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 59602383}
   - component: {fileID: 59602382}
+  - component: {fileID: 59602384}
   m_Layer: 7
   m_Name: FlyingE
   m_TagString: enemy
@@ -151,7 +152,7 @@ MonoBehaviour:
   sensorPoint: {fileID: 479515536}
   viewDistance: 25
   viewAngle: 120
-  playerTargetHeight: 1
+  playerTargetHeight: 0
   sensorMask:
     serializedVersion: 2
     m_Bits: 73
@@ -171,8 +172,33 @@ Transform:
   m_Children:
   - {fileID: 1763504114}
   - {fileID: 479515536}
+  - {fileID: 1021860101}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &59602384
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59602381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a852f3d414d3b34449504dfbcb9f1ef2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlyingEnemyAI
+  minDistance: 8
+  maxDistance: 14
+  flyingHeight: 6
+  moveSpeed: 5
+  retreatSpeed: 6
+  rotateSpeed: 5
+  firePoint: {fileID: 1021860101}
+  projectilePrefab: {fileID: 4743995067356822058, guid: 9fb32fd1ea1e5da45b3d3c229d75b7f8, type: 3}
+  shootCooldown: 1
+  projectileSpeed: 20
+  damage: 10
+  shootTargetHeight: 0
 --- !u!1 &183777295
 GameObject:
   m_ObjectHideFlags: 0
@@ -716,7 +742,7 @@ MonoBehaviour:
   shootCooldown: 1
   projectileSpeed: 20
   rangedDamage: 10
-  shootTargetHeight: 1
+  shootTargetHeight: 0
   shootMaxDistance: 15
   meleeEnterDistance: 3
   meleeExitDistance: 6
@@ -890,7 +916,7 @@ MonoBehaviour:
   sensorPoint: {fileID: 385795568}
   viewDistance: 25
   viewAngle: 120
-  playerTargetHeight: 1
+  playerTargetHeight: 0
   sensorMask:
     serializedVersion: 2
     m_Bits: 73
@@ -963,6 +989,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1672273182}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1021860100
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1021860101}
+  m_Layer: 7
+  m_Name: FirePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1021860101
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1021860100}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.363, z: 0.9}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 59602383}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1118443116
 GameObject:
@@ -1166,7 +1223,7 @@ Transform:
   m_GameObject: {fileID: 1352043834}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 45.61, y: 1.55, z: 40.89}
+  m_LocalPosition: {x: 47.99, y: 1.55, z: 42.66}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
