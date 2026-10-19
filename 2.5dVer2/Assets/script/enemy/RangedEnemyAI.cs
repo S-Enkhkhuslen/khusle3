@@ -1,9 +1,24 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class RangedEnemyAI : MonoBehaviour
 {
     [Header("Ranged Settings")]
+
+    [SerializeField] private Transform firePoint;
+
+    [SerializeField] private GameObject projectilePrefab;
+
+    [SerializeField] private float shootCooldown = 1f;
+
+    [SerializeField] private float projectileSpeed = 20f;
+
+    [SerializeField] private float rangedDamage = 10f;
+
+    [SerializeField] private float shootTargetHeight = 1f;
+
+    private float nextShootTime;
 
     // Үүнээс хол байвал Player руу ойртоно
     [SerializeField] private float shootMaxDistance = 15f;
@@ -143,7 +158,7 @@ public class RangedEnemyAI : MonoBehaviour
             // Зөв буудах зайд орсон
             StopMoving();
 
-            RangedAttack();
+            RangedAttack(player);
         }
     }
 
@@ -238,9 +253,64 @@ public class RangedEnemyAI : MonoBehaviour
     // RANGED ATTACK
     // =====================================================
 
-    private void RangedAttack()
+    private void RangedAttack(Transform player)
     {
-        // Одоохондоо зөвхөн тест
+        // Cooldown дуусаагүй бол буудахгүй
+        if (Time.time < nextShootTime)
+            return;
+
+
+        // FirePoint эсвэл Projectile байхгүй бол
+        // буудаж болохгүй
+        if (firePoint == null || projectilePrefab == null)
+            return;
+
+
+        // Дараагийн буудах хугацааг тохируулна
+        nextShootTime =
+            Time.time + shootCooldown;
+
+
+        // Player-ийн бие орчимд онилно
+        Vector3 targetPosition =
+            player.position
+            + Vector3.up * shootTargetHeight;
+
+
+        // FirePoint -> Player чиглэл
+        Vector3 shootDirection =
+            targetPosition - firePoint.position;
+
+
+        // Чиглэлийн уртыг 1 болгоно
+        shootDirection.Normalize();
+
+
+        // Projectile үүсгэнэ
+        GameObject projectile =
+            Instantiate(
+                projectilePrefab,
+                firePoint.position,
+                Quaternion.LookRotation(shootDirection)
+            );
+
+
+        // Projectile дээрх script-ийг авна
+        EnemyProjectile projectileScript =
+            projectile.GetComponent<EnemyProjectile>();
+
+
+        // Script байгаа бол сумыг хөдөлгөнө
+        if (projectileScript != null)
+        {
+            projectileScript.Launch(
+                shootDirection,
+                projectileSpeed,
+                rangedDamage
+            );
+        }
+
+
         Debug.Log("RANGED SHOOT");
     }
 
