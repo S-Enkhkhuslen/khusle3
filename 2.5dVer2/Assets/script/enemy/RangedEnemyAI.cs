@@ -33,6 +33,13 @@ public class RangedEnemyAI : MonoBehaviour
     // Melee attack хийх бодит зай
     [SerializeField] private float meleeAttackDistance = 2f;
 
+    [Header("Melee Attack")]
+
+    [SerializeField] private float meleeDamage = 20f;
+
+    [SerializeField] private float meleeCooldown = 1.5f;
+
+    private float nextMeleeTime;
 
     [Header("Rotation")]
 
@@ -135,7 +142,7 @@ public class RangedEnemyAI : MonoBehaviour
             {
                 StopMoving();
 
-                MeleeAttack();
+                MeleeAttack(player);
             }
 
             // Melee mode ажиллачихсан учраас
@@ -318,10 +325,33 @@ public class RangedEnemyAI : MonoBehaviour
     // =====================================================
     // MELEE ATTACK
     // =====================================================
-
-    private void MeleeAttack()
+    private void MeleeAttack(Transform player)
     {
-        // Одоохондоо зөвхөн тест
+        // Дараагийн attack хийх хугацаа болоогүй бол
+        // одоохондоо attack хийхгүй
+        if (Time.time < nextMeleeTime)
+            return;
+
+
+        // Дараагийн attack хийх боломжтой хугацааг тохируулна
+        nextMeleeTime =
+            Time.time + meleeCooldown;
+
+
+        // Player дээр байгаа Health script-ийг авна
+        PlayerHealth playerHealth =
+            player.GetComponent<PlayerHealth>();
+
+
+        // PlayerHealth олдсон бол damage өгнө
+        if (playerHealth != null)
+        {
+            playerHealth.TakeDamage(
+                meleeDamage
+            );
+        }
+
+
         Debug.Log("MELEE ATTACK");
     }
 

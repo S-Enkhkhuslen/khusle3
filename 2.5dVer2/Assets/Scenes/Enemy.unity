@@ -711,10 +711,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e6849042a599a34f81390ea416b045d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RangedEnemyAI
+  firePoint: {fileID: 1016793503}
+  projectilePrefab: {fileID: 4743995067356822058, guid: 9fb32fd1ea1e5da45b3d3c229d75b7f8, type: 3}
+  shootCooldown: 1
+  projectileSpeed: 20
+  rangedDamage: 10
+  shootTargetHeight: 1
   shootMaxDistance: 15
   meleeEnterDistance: 3
   meleeExitDistance: 6
   meleeAttackDistance: 2
+  meleeDamage: 20
+  meleeCooldown: 1.5
   rotateSpeed: 5
 --- !u!195 &606190029
 NavMeshAgent:
@@ -950,7 +958,7 @@ Transform:
   m_GameObject: {fileID: 1016793502}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.33, z: -0}
+  m_LocalPosition: {x: 0, y: 2.97, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
