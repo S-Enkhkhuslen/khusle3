@@ -453,8 +453,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df02cb93d6e096945bf3ae19cea5fe5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  HP: 100
-  MaxHP: 100
+  maxHealth: 100
 --- !u!114 &47683794
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5856,6 +5855,70 @@ Terrain:
   m_EnableHeightmapRayTracing: 1
   m_EnableTreesAndDetailsRayTracing: 0
   m_TreeMotionVectorModeOverride: 3
+--- !u!1 &338109807
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 338109809}
+  - component: {fileID: 338109808}
+  m_Layer: 0
+  m_Name: Navigation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &338109808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 338109807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshSurface
+  m_SerializedVersion: 0
+  m_AgentTypeID: 0
+  m_CollectObjects: 0
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_UseGeometry: 0
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.16666667
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 0}
+  m_BuildHeightMesh: 0
+--- !u!4 &338109809
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 338109807}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &367326724
 GameObject:
   m_ObjectHideFlags: 0
@@ -11990,6 +12053,9 @@ MonoBehaviour:
   Tank: {fileID: 5552999208229983185, guid: c6b0be890022e6f4f83169019c95c62c, type: 3}
   damage: 10
   health: 100
+  animator: {fileID: 0}
+  deathDelay: 3
+  damageOnContact: 1
 --- !u!114 &1127730159
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12002,15 +12068,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d15c31ffa0e4ace4dbd889e3e8434bbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySensor
-  SeeLongSensor: 35
-  SeeShortSensor: 35
-  ViewAngle: 180
-  CenterSensorPoint: {fileID: 1200653626}
-  RightSensorPoint: {fileID: 1287590423}
-  LeftSensorPoint: {fileID: 592095576}
-  PlayerTransform: {fileID: 0}
-  ShouldFacePlayer: 1
-  RotateSpeed: 5
+  sensorPoint: {fileID: 0}
+  viewDistance: 25
+  viewAngle: 120
+  playerTargetHeight: 1
+  sensorMask:
+    serializedVersion: 2
+    m_Bits: 0
+  loseSightDelay: 1
 --- !u!1 &1138716158
 GameObject:
   m_ObjectHideFlags: 0
@@ -22868,3 +22933,4 @@ SceneRoots:
   - {fileID: 2013707607}
   - {fileID: 516970527}
   - {fileID: 211444589}
+  - {fileID: 338109809}
