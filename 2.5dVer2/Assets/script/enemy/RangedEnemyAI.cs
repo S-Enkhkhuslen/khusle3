@@ -1,3 +1,4 @@
+
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -46,6 +47,35 @@ public class RangedEnemyAI : MonoBehaviour
     [SerializeField] private float rotateSpeed = 5f;
 
 
+    // =====================================================
+    // ANIMATION SETTINGS
+    // =====================================================
+
+    [Header("Animation")]
+
+    // ANIMATION: Ranged Enemy-ийн Animator
+    [SerializeField] private Animator animator;
+
+    // ANIMATION: Хөдөлж байгааг мэдэх хамгийн бага хурд
+    [SerializeField] private float movingThreshold = 0.1f;
+
+    // ANIMATION: Attack хөдөлгөөний эхнээс
+    // хэдэн секундийн дараа Melee damage өгөх вэ?
+    [SerializeField] private float meleeHitDelay = 0.35f;
+
+    // ANIMATION: Melee attack damage хүлээгдэж байгаа эсэх
+    private bool meleeAttackPending = false;
+
+    // ANIMATION: Damage өгөх хугацаа
+    private float meleeHitTime;
+
+    // ANIMATION: Дайрч байгаа Player
+    private Transform meleeTarget;
+
+    // ANIMATION: Enemy-ийн Health болон Death төлөв
+    private Enemy enemy;
+
+
     private EnemySensor sensor;
     private NavMeshAgent agent;
 
@@ -60,6 +90,22 @@ public class RangedEnemyAI : MonoBehaviour
 
         agent = GetComponent<NavMeshAgent>();
 
+        // ANIMATION: Enemy script-ийг авна
+        enemy = GetComponent<Enemy>();
+
+        // ANIMATION: Animator Inspector дээр
+        // холбогдоогүй бол Child model-оос хайна
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+
+        // ANIMATION: NavMeshAgent хөдөлгөөнийг удирдах учраас
+        // Root Motion-ийг унтраана
+        if (animator != null)
+        {
+            animator.applyRootMotion = false;
+        }
 
         // Rotation-ийг өөрсдөө удирдана
         if (agent != null)
@@ -71,15 +117,38 @@ public class RangedEnemyAI : MonoBehaviour
 
     private void Update()
     {
+        // ANIMATION: Enemy үхсэн бол
+        // цааш AI ажиллуулахгүй
+        if (enemy != null && enemy.IsDead)
+        {
+            StopMoving();
+
+            SetMovingAnimation(false);
+
+            meleeAttackPending = false;
+            meleeTarget = null;
+
+            return;
+        }
+
+        // ANIMATION: Хүлээгдэж байгаа Melee damage шалгана
+        UpdateMeleeDamage();
+
         // Component байхгүй бол ажиллахгүй
         if (sensor == null || agent == null)
+        {
+            SetMovingAnimation(false);
             return;
-
+        }
 
         // Player detect хийгээгүй
         if (!sensor.PlayerDetected)
         {
             StopMoving();
+
+            // ANIMATION: Idle ажиллуулна
+            SetMovingAnimation(false);
+
             return;
         }
 
@@ -89,7 +158,11 @@ public class RangedEnemyAI : MonoBehaviour
 
 
         if (player == null)
+        {
+            StopMoving();
+            SetMovingAnimation(false);
             return;
+        }
 
 
         // Player хүртэлх horizontal зай
@@ -145,6 +218,9 @@ public class RangedEnemyAI : MonoBehaviour
                 MeleeAttack(player);
             }
 
+            // ANIMATION: Хөдөлгөөний төлөв шинэчилнэ
+            UpdateMovementAnimation();
+
             // Melee mode ажиллачихсан учраас
             // доорх Ranged код руу оруулахгүй
             return;
@@ -167,6 +243,9 @@ public class RangedEnemyAI : MonoBehaviour
 
             RangedAttack(player);
         }
+
+        // ANIMATION: Run эсвэл Idle ажиллуулна
+        UpdateMovementAnimation();
     }
 
 
@@ -278,6 +357,13 @@ public class RangedEnemyAI : MonoBehaviour
             Time.time + shootCooldown;
 
 
+        // ANIMATION: Буудах animation ажиллуулна
+        if (animator != null)
+        {
+            animator.SetTrigger("Attack");
+        }
+
+
         // Player-ийн бие орчимд онилно
         Vector3 targetPosition =
             player.position
@@ -338,9 +424,63 @@ public class RangedEnemyAI : MonoBehaviour
             Time.time + meleeCooldown;
 
 
+        // ANIMATION: Melee үед мөн Attack ажиллуулна
+        // Одоогоор Ranged болон Melee mode
+        // нэг Attack animation ашиглаж байгаа
+        if (animator != null)
+        {
+            animator.SetTrigger("Attack");
+        }
+
+
+        // Player дээр байгаа Health script-ийг авна
+        // ANIMATION: Damage-ийг шууд өгөхгүй
+        // Attack хөдөлгөөний дараа өгнө
+        meleeTarget = player;
+
+        meleeHitTime =
+            Time.time + meleeHitDelay;
+
+        meleeAttackPending = true;
+
+
+        Debug.Log("MELEE ATTACK");
+    }
+
+
+    // =====================================================
+    // ANIMATION - MELEE DAMAGE
+    // =====================================================
+
+    private void UpdateMeleeDamage()
+    {
+        // Melee Attack хүлээгдээгүй бол
+        if (!meleeAttackPending)
+            return;
+
+        // Цохилт хийх хугацаа болоогүй бол
+        if (Time.time < meleeHitTime)
+            return;
+
+        meleeAttackPending = false;
+
+        // Player байхгүй болсон бол
+        if (meleeTarget == null)
+            return;
+
+        // Player хэт холдсон эсэхийг шалгана
+        float distance =
+            GetHorizontalDistance(meleeTarget);
+
+        if (distance > meleeAttackDistance)
+        {
+            meleeTarget = null;
+            return;
+        }
+
         // Player дээр байгаа Health script-ийг авна
         PlayerHealth playerHealth =
-            player.GetComponent<PlayerHealth>();
+            meleeTarget.GetComponent<PlayerHealth>();
 
 
         // PlayerHealth олдсон бол damage өгнө
@@ -351,8 +491,49 @@ public class RangedEnemyAI : MonoBehaviour
             );
         }
 
+        meleeTarget = null;
+    }
 
-        Debug.Log("MELEE ATTACK");
+
+    // =====================================================
+    // ANIMATION - MOVEMENT
+    // =====================================================
+
+    private void UpdateMovementAnimation()
+    {
+        if (animator == null || agent == null)
+            return;
+
+        if (!agent.isOnNavMesh)
+        {
+            SetMovingAnimation(false);
+            return;
+        }
+
+        // NavMeshAgent үнэхээр хөдөлж байгаа эсэх
+        bool isMoving =
+            !agent.isStopped &&
+            agent.velocity.magnitude > movingThreshold;
+
+        // ANIMATION: Melee цохилт хийх үед
+        // Run animation-ийг түр зогсооно
+        if (meleeAttackPending)
+        {
+            isMoving = false;
+        }
+
+        SetMovingAnimation(isMoving);
+    }
+
+
+    private void SetMovingAnimation(bool isMoving)
+    {
+        if (animator == null)
+            return;
+
+        // true = Run
+        // false = Idle
+        animator.SetBool("IsMoving", isMoving);
     }
 
 
