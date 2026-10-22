@@ -25,7 +25,7 @@ public class RangedEnemyAI : MonoBehaviour
     [SerializeField] private float shootMaxDistance = 15f;
 
     // Үүнээс ойртоход Melee mode руу орно
-    [SerializeField] private float meleeEnterDistance = 3f;
+    [SerializeField] private float meleeEnterDistance = 4f;
 
     // Melee mode-д орсны дараа
     // Player энэ зайнаас холдвол Ranged mode руу буцна
