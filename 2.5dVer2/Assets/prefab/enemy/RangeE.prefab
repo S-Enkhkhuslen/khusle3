@@ -56,7 +56,7 @@ Transform:
   m_GameObject: {fileID: 4736073020452141472}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.00314, y: -0.01532, z: 0.00523}
+  m_LocalPosition: {x: 0, y: 1.1, z: 1.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -159,7 +159,7 @@ MonoBehaviour:
   shootCooldown: 1
   projectileSpeed: 20
   rangedDamage: 10
-  shootTargetHeight: 0
+  shootTargetHeight: 0.5
   shootMaxDistance: 15
   meleeEnterDistance: 3
   meleeExitDistance: 6
@@ -170,6 +170,7 @@ MonoBehaviour:
   animator: {fileID: 7174866971281898680}
   movingThreshold: 0.1
   meleeHitDelay: 0.35
+  meleeVerticalRange: 1.5
 --- !u!114 &1725424347734183636
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,11 +184,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   Tank: {fileID: 5552999208229983185, guid: c6b0be890022e6f4f83169019c95c62c, type: 3}
-  damage: 10
   health: 100
   animator: {fileID: 7174866971281898680}
   deathDelay: 3
-  damageOnContact: 1
 --- !u!136 &8391301699257257829
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -203,7 +202,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2

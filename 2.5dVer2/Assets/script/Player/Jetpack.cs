@@ -8,17 +8,16 @@ public class Jetpack : MonoBehaviour
     [Header("Jetpack Settings")]
     [SerializeField] private float jetForce = 8f;
     [SerializeField] private float oxygenConsumptionRate = 20f;
-
     [Header("Gravity Settings")]
     [SerializeField] private float gravity = -9.8f;
     [SerializeField] private float groundedForce = -2f;
 
     private CharacterController characterController;
     private Oxygen oxygen;
-
+    private PlayerHealth playerHealth;
+    private PlayerInput playerInput;
     private bool jetButtonHeld;
     private float verticalVelocity;
-
     public float VerticalVelocity => verticalVelocity;
     public bool IsJetting { get; private set; }
 
@@ -26,6 +25,8 @@ public class Jetpack : MonoBehaviour
     {
         characterController = GetComponent<CharacterController>();
         oxygen = GetComponent<Oxygen>();
+        playerHealth = GetComponent<PlayerHealth>();
+        playerInput = GetComponent<PlayerInput>();
     }
 
     public void OnJump(InputAction.CallbackContext context)
@@ -33,45 +34,38 @@ public class Jetpack : MonoBehaviour
         jetButtonHeld = context.ReadValueAsButton();
     }
 
-    private void Update()
+    // Controller calls this once, before applying the combined movement.
+    public void Simulate(float deltaTime)
     {
-        HandleJetpack();
-        ApplyGravity();
-    }
+        bool canReadInput = (playerHealth == null || !playerHealth.IsDead)
+            && (playerInput == null || playerInput.inputIsActive);
+        InputAction jump = playerInput != null && playerInput.actions != null
+            ? playerInput.actions.FindAction("Gameplay/jump", false) : null;
+        bool held = jump != null ? jump.IsPressed() : jetButtonHeld;
+        // Space remains independent of Shift and of an input callback's phase.
+        held |= Keyboard.current != null && Keyboard.current.spaceKey.isPressed;
+        IsJetting = canReadInput && held && oxygen != null && oxygen.HasOxygen;
 
-    private void HandleJetpack()
-    {
-        bool canUseJetpack =
-            jetButtonHeld &&
-            oxygen != null &&
-            oxygen.HasOxygen;
-
-        IsJetting = canUseJetpack;
-
-        if (!IsJetting)
+        if (IsJetting)
         {
-            return;
+            verticalVelocity = jetForce;
+            oxygen.ConsumeOxygen(oxygenConsumptionRate * deltaTime);
         }
-
-        verticalVelocity = jetForce;
-
-        oxygen.ConsumeOxygen(
-            oxygenConsumptionRate * Time.deltaTime
-        );
-    }
-
-    private void ApplyGravity()
-    {
-        if (characterController.isGrounded &&
-            verticalVelocity < 0f)
-        {
+        else if (characterController.isGrounded && verticalVelocity < 0f)
             verticalVelocity = groundedForce;
-            return;
-        }
+        else
+            verticalVelocity += gravity * deltaTime;
+    }
 
-        if (!IsJetting)
-        {
-            verticalVelocity += gravity * Time.deltaTime;
-        }
+    public void StopJetting()
+    {
+        jetButtonHeld = false;
+        IsJetting = false;
+        verticalVelocity = Mathf.Min(0f, verticalVelocity);
+    }
+
+    public void ResetVerticalVelocity()
+    {
+        verticalVelocity = groundedForce;
     }
 }

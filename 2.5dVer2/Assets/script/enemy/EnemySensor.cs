@@ -121,7 +121,8 @@ public class EnemySensor : MonoBehaviour
     {
         // Player эсвэл SensorPoint байхгүй бол
         // sensor ажиллах боломжгүй.
-        if (PlayerTransform == null || sensorPoint == null)
+        PlayerHealth health = PlayerTransform != null ? PlayerTransform.GetComponent<PlayerHealth>() : null;
+        if ((health != null && health.IsDead) || PlayerTransform == null || sensorPoint == null)
         {
             PlayerDetected = false;
             return;

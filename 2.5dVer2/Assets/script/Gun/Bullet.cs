@@ -1,28 +1,22 @@
 using UnityEngine;
 
-public class Bullet : MonoBehaviour
+public class Bullet : SweptProjectile
 {
     public float damage = 20f;
-
-    private void Start()
+    public void Launch(Vector3 direction, float speed, float damageAmount, Transform owner)
     {
-
-        Destroy(gameObject, 10f);
+        damage = Mathf.Max(0f, damageAmount);
+        Initialize(direction, speed, owner);
     }
 
-    private void OnTriggerEnter(Collider other)
+    protected override bool IgnoreTarget(Collider other)
     {
-        if (other.CompareTag("enemy"))
-        {
-            Enemy enemy = other.GetComponent<Enemy>();
-
-            if (enemy != null)
-            {
-                enemy.TakeDamage(damage);
-            }
-        }
-
-        Destroy(gameObject);
+        if (other.GetComponentInParent<PlayerHealth>() != null) return true;
+        return other.isTrigger && other.GetComponentInParent<Enemy>() == null;
     }
 
+    protected override void OnImpact(Collider other)
+    {
+        other.GetComponentInParent<Enemy>()?.TakeDamage(damage);
+    }
 }

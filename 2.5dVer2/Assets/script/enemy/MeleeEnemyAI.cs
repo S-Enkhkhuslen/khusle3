@@ -19,6 +19,7 @@ public class MeleeEnemyAI : MonoBehaviour
 
     // ANIMATION: Сэлэм цавчих мөч хүртэл хүлээнэ
     [SerializeField] private float attackHitDelay = 0.35f;
+    [SerializeField, Min(0f)] private float meleeVerticalRange = 1.5f;
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
@@ -145,7 +146,7 @@ public class MeleeEnemyAI : MonoBehaviour
 
     private void ChasePlayer(Transform player)
     {
-        if (!agent.isOnNavMesh)
+        if (agent == null || !agent.isOnNavMesh)
             return;
 
         Vector3 targetPosition =
@@ -178,7 +179,7 @@ public class MeleeEnemyAI : MonoBehaviour
 
     private void StopMoving()
     {
-        if (!agent.isOnNavMesh)
+        if (agent == null || !agent.isOnNavMesh)
             return;
 
         agent.isStopped = true;
@@ -225,6 +226,9 @@ public class MeleeEnemyAI : MonoBehaviour
 
     private void AttackPlayer(Transform player)
     {
+        if (!CombatPhysics.CanMeleeHit(transform, player, attackDistance, meleeVerticalRange))
+            return;
+
         // Cooldown дуусаагүй бол attack хийхгүй
         if (Time.time < nextAttackTime)
             return;
@@ -270,7 +274,7 @@ public class MeleeEnemyAI : MonoBehaviour
         float distance =
             GetHorizontalDistance(attackTarget);
 
-        if (distance > attackDistance)
+        if (!CombatPhysics.CanMeleeHit(transform, attackTarget, attackDistance, meleeVerticalRange))
         {
             attackTarget = null;
             return;
@@ -297,7 +301,7 @@ public class MeleeEnemyAI : MonoBehaviour
 
     private void UpdateMovementAnimation()
     {
-        if (animator == null || !agent.isOnNavMesh)
+        if (animator == null || agent == null || !agent.isOnNavMesh)
             return;
 
         bool isMoving =

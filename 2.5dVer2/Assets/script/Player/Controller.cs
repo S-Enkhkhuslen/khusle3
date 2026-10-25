@@ -16,6 +16,7 @@ public class Controller : MonoBehaviour
     private Jetpack jetpack;
     private Sprint sprint;
     private TPSAim tpsAim;
+    private PlayerHealth playerHealth;
 
     private Vector2 moveInput;
     private Vector3 moveDirection;
@@ -28,6 +29,7 @@ public class Controller : MonoBehaviour
         jetpack = GetComponent<Jetpack>();
         sprint = GetComponent<Sprint>();
         tpsAim = GetComponent<TPSAim>();
+        playerHealth = GetComponent<PlayerHealth>();
     }
 
     public void OnMove(InputAction.CallbackContext context)
@@ -38,13 +40,15 @@ public class Controller : MonoBehaviour
     private void Update()
     {
         CalculateMoveDirection();
+        jetpack?.Simulate(Time.deltaTime);
+        sprint?.Simulate(Time.deltaTime);
         MovePlayer();
         RotatePlayer();
     }
 
     private void CalculateMoveDirection()
     {
-        if (cameraTransform == null)
+        if ((playerHealth != null && playerHealth.IsDead) || cameraTransform == null)
         {
             moveDirection = Vector3.zero;
             return;
@@ -92,6 +96,9 @@ public class Controller : MonoBehaviour
 
     private void RotatePlayer()
     {
+        if (playerHealth != null && playerHealth.IsDead)
+            return;
+
         if (tpsAim != null && tpsAim.IsAiming)
         {
             return;

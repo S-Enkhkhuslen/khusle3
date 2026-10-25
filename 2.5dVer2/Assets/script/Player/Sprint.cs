@@ -8,64 +8,47 @@ public class Sprint : MonoBehaviour
     [Header("Sprint Settings")]
     [SerializeField] private float sprintSpeedMultiplier = 1.5f;
     [SerializeField] private float oxygenConsumptionRate = 15f;
-
     private Oxygen oxygen;
     private Controller playerController;
-
+    private PlayerHealth playerHealth;
+    private PlayerInput playerInput;
     private bool sprintButtonHeld;
-
     public bool IsSprinting { get; private set; }
-
-    public float SpeedMultiplier
-    {
-        get
-        {
-            return IsSprinting
-                ? sprintSpeedMultiplier
-                : 1f;
-        }
-    }
+    public float SpeedMultiplier => IsSprinting ? sprintSpeedMultiplier : 1f;
 
     private void Awake()
     {
         oxygen = GetComponent<Oxygen>();
         playerController = GetComponent<Controller>();
+        playerHealth = GetComponent<PlayerHealth>();
+        playerInput = GetComponent<PlayerInput>();
     }
 
-    // Invoke Unity Events-ээс дуудагдана.
     public void OnSprint(InputAction.CallbackContext context)
     {
-        // Shift дарагдсан үед true,
-        // Shift тавигдсан үед false болно.
         sprintButtonHeld = context.ReadValueAsButton();
     }
 
-    private void Update()
+    // Evaluated independently of the jetpack; both can run in the same frame.
+    public void Simulate(float deltaTime)
     {
-        HandleSprint();
+        bool canReadInput = (playerHealth == null || !playerHealth.IsDead)
+            && (playerInput == null || playerInput.inputIsActive);
+        InputAction action = playerInput != null && playerInput.actions != null
+            ? playerInput.actions.FindAction("Gameplay/Sprint", false) : null;
+        bool held = action != null ? action.IsPressed() : sprintButtonHeld;
+        held |= Keyboard.current != null
+            && (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed);
+        IsSprinting = canReadInput && held && playerController != null
+            && playerController.MoveDirection.sqrMagnitude > 0.01f
+            && oxygen != null && oxygen.HasOxygen;
+        if (IsSprinting)
+            oxygen.ConsumeOxygen(oxygenConsumptionRate * deltaTime);
     }
 
-    private void HandleSprint()
+    public void StopSprinting()
     {
-        bool isMoving =
-            playerController != null &&
-            playerController.MoveDirection.sqrMagnitude > 0.01f;
-
-        bool canSprint =
-            sprintButtonHeld &&
-            isMoving &&
-            oxygen != null &&
-            oxygen.HasOxygen;
-
-        IsSprinting = canSprint;
-
-        if (!IsSprinting)
-        {
-            return;
-        }
-
-        oxygen.ConsumeOxygen(
-            oxygenConsumptionRate * Time.deltaTime
-        );
+        sprintButtonHeld = false;
+        IsSprinting = false;
     }
 }

@@ -1,72 +1,22 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
-public class EnemyProjectile : MonoBehaviour
+public class EnemyProjectile : SweptProjectile
 {
-    [Header("Settings")]
-    [SerializeField] private float lifeTime = 5f;
-
-
-    private Rigidbody rb;
-
     private float damage;
-
-
-    private void Awake()
+    public void Launch(Vector3 direction, float speed, float damageAmount, Transform owner = null)
     {
-        rb = GetComponent<Rigidbody>();
+        damage = Mathf.Max(0f, damageAmount);
+        Initialize(direction, speed, owner);
     }
 
-
-    public void Launch(
-        Vector3 direction,
-        float speed,
-        float damageAmount)
+    protected override bool IgnoreTarget(Collider other)
     {
-        // EnemyAI-аас ирсэн damage-г хадгална
-        damage = damageAmount;
-
-
-        // Projectile-ийг direction чиглэлд хөдөлгөнө
-        rb.linearVelocity =
-            direction.normalized * speed;
-
-
-        // 5 секунд болоод юу ч оноогүй байсан ч устгана
-        Destroy(
-            gameObject,
-            lifeTime
-        );
+        if (other.GetComponentInParent<Enemy>() != null) return true;
+        return other.isTrigger && other.GetComponentInParent<PlayerHealth>() == null;
     }
 
-
-    private void OnTriggerEnter(Collider other)
+    protected override void OnImpact(Collider other)
     {
-        // Player-ийг оносон уу?
-        PlayerHealth playerHealth =
-            other.GetComponentInParent<PlayerHealth>();
-
-
-        if (playerHealth != null)
-        {
-            // Player-д damage өгнө
-            playerHealth.TakeDamage(
-                damage
-            );
-
-
-            // Сумыг устгана
-            Destroy(gameObject);
-
-            return;
-        }
-
-
-        // Trigger биш бусад object мөргөвөл
-        // сум бас устна
-        if (!other.isTrigger)
-        {
-            Destroy(gameObject);
-        }
+        other.GetComponentInParent<PlayerHealth>()?.TakeDamage(damage);
     }
 }

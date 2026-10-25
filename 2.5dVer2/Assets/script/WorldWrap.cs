@@ -5,18 +5,19 @@ public class WorldWrap : MonoBehaviour
     [Header("Terrain")]
     [SerializeField] private Terrain terrain;
 
-    [Header("Player Controller Script")]
-    [SerializeField] private Controller playerController;
 
     [Header("Settings")]
     [SerializeField] private float insideOffset = 5f;
-    [SerializeField] private float heightOffset = 1f;
 
+    private CharacterController characterController;
+    private Jetpack jetpack;
     private Vector3 terrainPosition;
     private Vector3 terrainSize;
 
     private void Start()
     {
+        characterController = GetComponent<CharacterController>();
+        jetpack = GetComponent<Jetpack>();
         if (terrain == null)
         {
             terrain = Terrain.activeTerrain;
@@ -28,10 +29,6 @@ public class WorldWrap : MonoBehaviour
             return;
         }
 
-        if (playerController == null)
-        {
-            playerController = GetComponent<Controller>();
-        }
 
         terrainPosition = terrain.transform.position;
         terrainSize = terrain.terrainData.size;
@@ -84,23 +81,20 @@ public class WorldWrap : MonoBehaviour
 
     private void Teleport(Vector3 newPosition)
     {
-        float terrainHeight = terrain.SampleHeight(newPosition);
-        newPosition.y = terrain.transform.position.y + terrainHeight + heightOffset;
+        float oldGround = terrain.transform.position.y + terrain.SampleHeight(transform.position);
+        float newGround = terrain.transform.position.y + terrain.SampleHeight(newPosition);
+        float bottomOffset = characterController != null
+            ? (characterController.center.y - characterController.height * 0.5f) * transform.lossyScale.y : 0f;
+        float feetAboveGround = transform.position.y + bottomOffset - oldGround;
+        bool airborne = characterController != null && !characterController.isGrounded;
+        float clearance = airborne ? Mathf.Max(0.05f, feetAboveGround) : 0.05f;
+        newPosition.y = newGround - bottomOffset + clearance;
 
-        // Teleport хийх үед Controller script-ийг түр унтраана.
-        // Ингэхгүй бол controller дараагийн frame дээр хуучин хөдөлгөөнөө үргэлжлүүлээд эвгүйтэж магадгүй.
-        if (playerController != null)
-        {
-            playerController.enabled = false;
-        }
-
+        bool wasEnabled = characterController != null && characterController.enabled;
+        if (wasEnabled) characterController.enabled = false;
         transform.position = newPosition;
-
-        if (playerController != null)
-        {
-            playerController.enabled = true;
-        }
-
-        Debug.Log($"Wrapped to: {newPosition}");
+        Physics.SyncTransforms();
+        if (wasEnabled) characterController.enabled = true;
+        if (!airborne) jetpack?.ResetVerticalVelocity();
     }
 }

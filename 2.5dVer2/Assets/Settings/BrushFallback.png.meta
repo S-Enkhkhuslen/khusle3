@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: bf5f2d02c441451f88f330e5f9ad2a02
+TextureImporter:
+  serializedVersion: 13
+  mipmaps:
+    enableMipMap: 0
+    sRGBTexture: 0
+  isReadable: 1
+  textureType: 0
+  textureShape: 1
+  maxTextureSize: 128
+  userData: Fallback for missing source brush masks. Original stamps are backed up.

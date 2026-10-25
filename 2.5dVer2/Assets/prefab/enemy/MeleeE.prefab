@@ -99,6 +99,7 @@ MonoBehaviour:
   attackHitDelay: 0.35
   animator: {fileID: 0}
   movingThreshold: 0.1
+  meleeVerticalRange: 1.5
 --- !u!114 &2274353390598721344
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,11 +113,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   Tank: {fileID: 5552999208229983185, guid: c6b0be890022e6f4f83169019c95c62c, type: 3}
-  damage: 10
   health: 100
   animator: {fileID: 0}
   deathDelay: 3
-  damageOnContact: 1
 --- !u!136 &3648522713448468378
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -132,7 +131,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2

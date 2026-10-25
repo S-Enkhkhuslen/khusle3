@@ -1,5 +1,4 @@
 
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -62,6 +61,7 @@ public class RangedEnemyAI : MonoBehaviour
     // ANIMATION: Attack хөдөлгөөний эхнээс
     // хэдэн секундийн дараа Melee damage өгөх вэ?
     [SerializeField] private float meleeHitDelay = 0.35f;
+    [SerializeField, Min(0f)] private float meleeVerticalRange = 1.5f;
 
     // ANIMATION: Melee attack damage хүлээгдэж байгаа эсэх
     private bool meleeAttackPending = false;
@@ -255,7 +255,7 @@ public class RangedEnemyAI : MonoBehaviour
 
     private void ChasePlayer(Transform player)
     {
-        if (!agent.isOnNavMesh)
+        if (agent == null || !agent.isOnNavMesh)
             return;
 
 
@@ -293,7 +293,7 @@ public class RangedEnemyAI : MonoBehaviour
 
     private void StopMoving()
     {
-        if (!agent.isOnNavMesh)
+        if (agent == null || !agent.isOnNavMesh)
             return;
 
 
@@ -399,7 +399,8 @@ public class RangedEnemyAI : MonoBehaviour
             projectileScript.Launch(
                 shootDirection,
                 projectileSpeed,
-                rangedDamage
+                rangedDamage,
+                transform
             );
         }
 
@@ -413,6 +414,9 @@ public class RangedEnemyAI : MonoBehaviour
     // =====================================================
     private void MeleeAttack(Transform player)
     {
+        if (!CombatPhysics.CanMeleeHit(transform, player, meleeAttackDistance, meleeVerticalRange))
+            return;
+
         // Дараагийн attack хийх хугацаа болоогүй бол
         // одоохондоо attack хийхгүй
         if (Time.time < nextMeleeTime)
@@ -472,7 +476,7 @@ public class RangedEnemyAI : MonoBehaviour
         float distance =
             GetHorizontalDistance(meleeTarget);
 
-        if (distance > meleeAttackDistance)
+        if (!CombatPhysics.CanMeleeHit(transform, meleeTarget, meleeAttackDistance, meleeVerticalRange))
         {
             meleeTarget = null;
             return;
@@ -504,7 +508,7 @@ public class RangedEnemyAI : MonoBehaviour
         if (animator == null || agent == null)
             return;
 
-        if (!agent.isOnNavMesh)
+        if (agent == null || !agent.isOnNavMesh)
         {
             SetMovingAnimation(false);
             return;

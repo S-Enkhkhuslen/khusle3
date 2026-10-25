@@ -45,7 +45,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TankGenerator
   Tank: {fileID: 5552999208229983185, guid: c6b0be890022e6f4f83169019c95c62c, type: 3}
-  minX: 300
-  maxX: 400
-  minY: 300
-  maxY: 400
+  tank: 8
+  spawnRadius: 30
+  height: 0.25
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 8

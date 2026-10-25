@@ -357,7 +357,8 @@ public class FlyingEnemyAI : MonoBehaviour
             projectileScript.Launch(
                 shootDirection,
                 projectileSpeed,
-                damage
+                damage,
+                transform
             );
         }
 

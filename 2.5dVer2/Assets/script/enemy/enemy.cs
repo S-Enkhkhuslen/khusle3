@@ -4,7 +4,6 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     [SerializeField] GameObject Tank;
-    public int damage = 10;
     public float health = 100f;
 
     // ANIMATION: Animator байгаа Enemy л animation тоглуулна
@@ -15,7 +14,6 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float deathDelay = 3f;
 
     // Melee Enemy-д contact damage-ийг унтрааж болно
-    [SerializeField] private bool damageOnContact = true;
 
     private bool isDead = false;
     public bool IsDead => isDead;
@@ -103,21 +101,5 @@ public class Enemy : MonoBehaviour
         }
 
         Destroy(gameObject);
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (isDead || !damageOnContact)
-            return;
-
-        if (other.CompareTag("Player"))
-        {
-            PlayerHealth player = other.GetComponent<PlayerHealth>();
-
-            if (player != null)
-            {
-                player.TakeDamage(damage);
-            }
-        }
     }
 }

@@ -20,9 +20,11 @@ public class TPSAim : MonoBehaviour
     [SerializeField] private float rotationSpeed = 15f;
 
     public bool IsAiming { get; private set; }
+    private PlayerHealth playerHealth;
 
     private void Awake()
     {
+        playerHealth = GetComponent<PlayerHealth>();
         if (mainCamera == null)
         {
             mainCamera = Camera.main;
@@ -40,6 +42,12 @@ public class TPSAim : MonoBehaviour
     public void OnAim(
         InputAction.CallbackContext context)
     {
+        if (playerHealth != null && playerHealth.IsDead)
+        {
+            SetAimState(false);
+            return;
+        }
+
         if (context.started)
         {
             SetAimState(true);
@@ -49,6 +57,11 @@ public class TPSAim : MonoBehaviour
         {
             SetAimState(false);
         }
+    }
+
+    private void OnDisable()
+    {
+        SetAimState(false);
     }
 
     private void Update()
