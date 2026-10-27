@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Oxygen : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class Oxygen : MonoBehaviour
     [Header("Oxygen Depletion")]
     [SerializeField, Min(0.1f)] private float depletionDamageInterval = 5f;
     [SerializeField, Min(0f)] private float depletionDamage = 5f;
+    [Header("Oxygen Bar")]
+    [SerializeField] private Slider oxygenBar;
 
     private PlayerHealth playerHealth;
     private float depletedTime;
@@ -27,6 +30,7 @@ public class Oxygen : MonoBehaviour
     {
         if (playerHealth == null || !playerHealth.IsDead)
             ConsumeOxygen(normalConsumptionRate * Time.deltaTime);
+            UpdateOxygenBar() ;
     }
 
     private void LateUpdate()
@@ -63,5 +67,14 @@ public class Oxygen : MonoBehaviour
         oxygen = Mathf.Clamp(oxygen + Mathf.Max(0f, amount), 0f, oxygenCapacity);
         if (HasOxygen)
             depletedTime = 0f;
+        UpdateOxygenBar();
+    }
+
+    private void UpdateOxygenBar()
+    {
+        if (oxygenBar == null) return;
+        oxygenBar.minValue = 0;
+        oxygenBar.maxValue = oxygenCapacity;
+        oxygenBar.value = oxygen;
     }
 }
