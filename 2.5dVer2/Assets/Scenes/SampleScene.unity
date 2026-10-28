@@ -11745,6 +11745,55 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &900000101
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 900000102}
+  - component: {fileID: 900000103}
+  m_Layer: 0
+  m_Name: EnemyGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &900000102
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900000101}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.99946296, z: 0, w: 0.032768067}
+  m_LocalPosition: {x: 90.72, y: 6.64, z: 94.56999}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 176.24438, z: 0}
+--- !u!114 &900000103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900000101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4507f4674437d8478d7077a18264bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyGenerator
+  MeleePrefab: {fileID: 5381108058322012601, guid: 112077136dd569f4ab5d5597dcc04fc0, type: 3}
+  RangePrefab: {fileID: 8147005281744627272, guid: 709a38f671da73a4686532f11e54ae9c, type: 3}
+  FlyingPrefab: {fileID: 8147005281744627272, guid: 709a38f671da73a4686532f11e54ae9c, type: 3}
+  Location: {fileID: 900000102}
+  navMeshSearchRadius: 5
 --- !u!1001 &923823247
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23174,3 +23223,4 @@ SceneRoots:
   - {fileID: 693660045}
   - {fileID: 307203930}
   - {fileID: 923823247}
+  - {fileID: 900000102}
