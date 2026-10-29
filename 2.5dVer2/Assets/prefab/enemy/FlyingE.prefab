@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 5217215982656834517}
   - component: {fileID: 4884859923892032036}
   - component: {fileID: 5730582953701505555}
+  - component: {fileID: 90000000000000103}
   m_Layer: 7
   m_Name: FlyingE
   m_TagString: enemy
@@ -277,3 +278,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &90000000000000103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2098145138963722710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a98c1a42b5c4d01ac5661ed46051e4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPatrol
+  pointA: {fileID: 0}
+  pointB: {fileID: 0}
+  automaticPatrolDistance: 8
+  patrolSpeed: 2
+  waitAtPoint: 1

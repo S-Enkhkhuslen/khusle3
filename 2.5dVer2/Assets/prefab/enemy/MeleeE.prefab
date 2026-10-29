@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4766100297167866228}
   - component: {fileID: 2274353390598721344}
   - component: {fileID: 3648522713448468378}
+  - component: {fileID: 90000000000000101}
   m_Layer: 7
   m_Name: MeleeE
   m_TagString: enemy
@@ -262,3 +263,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &90000000000000101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381108058322012601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a98c1a42b5c4d01ac5661ed46051e4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPatrol
+  pointA: {fileID: 0}
+  pointB: {fileID: 0}
+  automaticPatrolDistance: 8
+  patrolSpeed: 2
+  waitAtPoint: 1

@@ -9,11 +9,14 @@ public class PlayerHealth : MonoBehaviour
 
     public bool IsDead { get; private set; }
     public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
 
     private void Awake()
     {
         currentHealth = maxHealth;
         playerAnimation = GetComponent<PlayerAnimationController>();
+        if (GetComponent<PlayerHUD>() == null)
+            gameObject.AddComponent<PlayerHUD>();
     }
 
     public void TakeDamage(float damage)

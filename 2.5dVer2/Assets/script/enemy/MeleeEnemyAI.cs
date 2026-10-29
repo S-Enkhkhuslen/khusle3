@@ -27,6 +27,7 @@ public class MeleeEnemyAI : MonoBehaviour
     [SerializeField] private float movingThreshold = 0.1f;
 
     private EnemySensor sensor;
+    private EnemyPatrol patrol;
     private NavMeshAgent agent;
     private Enemy enemy;
 
@@ -41,6 +42,7 @@ public class MeleeEnemyAI : MonoBehaviour
     private void Awake()
     {
         sensor = GetComponent<EnemySensor>();
+        patrol = GetComponent<EnemyPatrol>();
 
         agent = GetComponent<NavMeshAgent>();
 
@@ -97,6 +99,9 @@ public class MeleeEnemyAI : MonoBehaviour
         // Player detect хийгээгүй бол зогсоно
         if (!sensor.PlayerDetected)
         {
+            if (patrol != null && patrol.isActiveAndEnabled)
+                return;
+
             StopMoving();
             SetMoving(false);
             return;

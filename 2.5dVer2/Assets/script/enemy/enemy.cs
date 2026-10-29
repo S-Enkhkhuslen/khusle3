@@ -5,6 +5,8 @@ public class Enemy : MonoBehaviour
 {
     [SerializeField] GameObject Tank;
     public float health = 100f;
+    private float startingHealth;
+    public float MaxHealth => Mathf.Max(startingHealth, health);
 
     // ANIMATION: Animator байгаа Enemy л animation тоглуулна
     [Header("Animation")]
@@ -23,6 +25,10 @@ public class Enemy : MonoBehaviour
 
     private void Awake()
     {
+        startingHealth = Mathf.Max(1f, health);
+        if (GetComponent<EnemyHealthBar>() == null)
+            gameObject.AddComponent<EnemyHealthBar>();
+
         // Animator Inspector дээр холбоогүй бол Child-аас хайна
         if (animator == null)
         {
@@ -35,6 +41,7 @@ public class Enemy : MonoBehaviour
         if (isDead)
             return;
 
+        startingHealth = Mathf.Max(startingHealth, health);
         health -= amount;
 
         if (health <= 0f)

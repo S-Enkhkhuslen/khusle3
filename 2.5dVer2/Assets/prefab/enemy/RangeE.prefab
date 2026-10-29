@@ -76,6 +76,7 @@ GameObject:
   - component: {fileID: 8813394510866173377}
   - component: {fileID: 1725424347734183636}
   - component: {fileID: 8391301699257257829}
+  - component: {fileID: 90000000000000102}
   m_Layer: 7
   m_Name: RangeE
   m_TagString: enemy
@@ -303,3 +304,20 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 1c4a8a4975de933488eaf0176cf68f18, type: 3}
   m_PrefabInstance: {fileID: 3117754933676900390}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &90000000000000102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8147005281744627272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a98c1a42b5c4d01ac5661ed46051e4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPatrol
+  pointA: {fileID: 0}
+  pointB: {fileID: 0}
+  automaticPatrolDistance: 8
+  patrolSpeed: 2
+  waitAtPoint: 1

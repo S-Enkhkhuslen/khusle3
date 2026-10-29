@@ -5579,6 +5579,18 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 90000000000000101, guid: 112077136dd569f4ab5d5597dcc04fc0, type: 3}
+      propertyPath: patrolPoints.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 90000000000000101, guid: 112077136dd569f4ab5d5597dcc04fc0, type: 3}
+      propertyPath: 'patrolPoints.Array.data[0]'
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 90000000000000101, guid: 112077136dd569f4ab5d5597dcc04fc0, type: 3}
+      propertyPath: 'patrolPoints.Array.data[1]'
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 137729381448303370, guid: 112077136dd569f4ab5d5597dcc04fc0, type: 3}
       propertyPath: m_Layer
       value: 7

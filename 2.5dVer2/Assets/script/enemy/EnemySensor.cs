@@ -170,11 +170,13 @@ public class EnemySensor : MonoBehaviour
             // 5. Player харах өнцөг дотор байгаа юу?
             // -----------------------------------------
 
-            float angle =
-                Vector3.Angle(
-                    transform.forward,
-                    directionToPlayer
-                );
+            // Keep the full 3D range and raycast, but use yaw for the view angle.
+            Vector3 horizontalDirection = targetPosition - sensorPoint.position;
+            horizontalDirection.y = 0f;
+            Vector3 horizontalForward = transform.forward;
+            horizontalForward.y = 0f;
+            float angle = horizontalDirection.sqrMagnitude > 0.000001f
+                ? Vector3.Angle(horizontalForward, horizontalDirection) : 0f;
 
 
             // ViewAngle = 120 бол

@@ -24,17 +24,18 @@ public class Oxygen : MonoBehaviour
     {
         playerHealth = GetComponent<PlayerHealth>();
         oxygen = Mathf.Clamp(oxygen, 0f, oxygenCapacity);
+        UpdateOxygenBar();
     }
 
     private void Update()
     {
         if (playerHealth == null || !playerHealth.IsDead)
             ConsumeOxygen(normalConsumptionRate * Time.deltaTime);
-            UpdateOxygenBar() ;
     }
 
     private void LateUpdate()
     {
+        UpdateOxygenBar();
         // Run after both sprint and jetpack have consumed oxygen for this frame.
         if (HasOxygen || playerHealth == null || playerHealth.IsDead)
         {
@@ -59,6 +60,7 @@ public class Oxygen : MonoBehaviour
     public bool ConsumeOxygen(float amount)
     {
         oxygen = Mathf.Clamp(oxygen - Mathf.Max(0f, amount), 0f, oxygenCapacity);
+        UpdateOxygenBar();
         return HasOxygen;
     }
 
@@ -73,8 +75,27 @@ public class Oxygen : MonoBehaviour
     private void UpdateOxygenBar()
     {
         if (oxygenBar == null) return;
-        oxygenBar.minValue = 0;
-        oxygenBar.maxValue = oxygenCapacity;
-        oxygenBar.value = oxygen;
+
+        // A non-zero sizeDelta leaves a visible slice even when the slider is empty.
+        RectTransform fill = oxygenBar.fillRect;
+        if (fill != null)
+        {
+            Vector2 size = fill.sizeDelta;
+            bool vertical = oxygenBar.direction == Slider.Direction.BottomToTop
+                || oxygenBar.direction == Slider.Direction.TopToBottom;
+            if (vertical) size.y = 0f;
+            else size.x = 0f;
+            fill.sizeDelta = size;
+        }
+
+        oxygenBar.wholeNumbers = false;
+        oxygenBar.minValue = 0f;
+        oxygenBar.maxValue = Mathf.Max(1f, oxygenCapacity);
+        oxygenBar.SetValueWithoutNotify(oxygen);
+        if (fill != null)
+        {
+            Image image = fill.GetComponent<Image>();
+            if (image != null) image.enabled = oxygen > 0f;
+        }
     }
 }

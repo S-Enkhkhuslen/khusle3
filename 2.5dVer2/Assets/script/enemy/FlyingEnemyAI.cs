@@ -82,6 +82,7 @@ public class FlyingEnemyAI : MonoBehaviour
     // =====================================================
 
     private EnemySensor sensor;
+    private EnemyPatrol patrol;
 
     private float nextShootTime;
 
@@ -94,6 +95,7 @@ public class FlyingEnemyAI : MonoBehaviour
     {
         sensor =
             GetComponent<EnemySensor>();
+        patrol = GetComponent<EnemyPatrol>();
 
         // ANIMATION: Enemy component-ийг авна
         enemy = GetComponent<Enemy>();
@@ -141,6 +143,9 @@ public class FlyingEnemyAI : MonoBehaviour
         // Player detect хийгээгүй бол юу ч хийхгүй
         if (!sensor.PlayerDetected)
         {
+            if (patrol != null && patrol.isActiveAndEnabled)
+                return;
+
             // ANIMATION: Idle ажиллуулна
             SetMovingAnimation(false);
             previousPosition = transform.position;

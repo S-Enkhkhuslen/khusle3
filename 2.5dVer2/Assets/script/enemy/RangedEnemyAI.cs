@@ -77,6 +77,7 @@ public class RangedEnemyAI : MonoBehaviour
 
 
     private EnemySensor sensor;
+    private EnemyPatrol patrol;
     private NavMeshAgent agent;
 
 
@@ -87,6 +88,7 @@ public class RangedEnemyAI : MonoBehaviour
     private void Awake()
     {
         sensor = GetComponent<EnemySensor>();
+        patrol = GetComponent<EnemyPatrol>();
 
         agent = GetComponent<NavMeshAgent>();
 
@@ -144,6 +146,9 @@ public class RangedEnemyAI : MonoBehaviour
         // Player detect хийгээгүй
         if (!sensor.PlayerDetected)
         {
+            if (patrol != null && patrol.isActiveAndEnabled)
+                return;
+
             StopMoving();
 
             // ANIMATION: Idle ажиллуулна
@@ -169,6 +174,10 @@ public class RangedEnemyAI : MonoBehaviour
         float distance =
             GetHorizontalDistance(player);
 
+        CharacterController playerController = player.GetComponent<CharacterController>();
+        bool canUseMelee = Mathf.Abs(player.position.y - transform.position.y) <= meleeVerticalRange
+            && (playerController == null || playerController.isGrounded);
+
 
         // Player руу харна
         FacePlayer(player);
@@ -178,7 +187,7 @@ public class RangedEnemyAI : MonoBehaviour
         // RANGED -> MELEE
         // =========================================
 
-        if (!isMeleeMode &&
+        if (!isMeleeMode && canUseMelee &&
             distance <= meleeEnterDistance)
         {
             isMeleeMode = true;
@@ -192,7 +201,7 @@ public class RangedEnemyAI : MonoBehaviour
         // =========================================
 
         if (isMeleeMode &&
-            distance >= meleeExitDistance)
+            (distance >= meleeExitDistance || !canUseMelee))
         {
             isMeleeMode = false;
 
@@ -203,6 +212,12 @@ public class RangedEnemyAI : MonoBehaviour
         // =========================================
         // MELEE MODE
         // =========================================
+
+        if (!canUseMelee)
+        {
+            meleeAttackPending = false;
+            meleeTarget = null;
+        }
 
         if (isMeleeMode)
         {
