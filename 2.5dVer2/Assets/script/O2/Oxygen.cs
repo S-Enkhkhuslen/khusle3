@@ -16,6 +16,9 @@ public class Oxygen : MonoBehaviour
 
     private PlayerHealth playerHealth;
     private float depletedTime;
+    private float displayedOxygen = -1f;
+    private float displayedCapacity = -1f;
+    private Slider.Direction displayedDirection;
     public float CurrentOxygen => oxygen;
     public float Capacity => oxygenCapacity;
     public bool HasOxygen => oxygen > 0f;
@@ -75,6 +78,11 @@ public class Oxygen : MonoBehaviour
     private void UpdateOxygenBar()
     {
         if (oxygenBar == null) return;
+        if (oxygen == displayedOxygen && oxygenCapacity == displayedCapacity
+            && oxygenBar.direction == displayedDirection) return;
+        displayedOxygen = oxygen;
+        displayedCapacity = oxygenCapacity;
+        displayedDirection = oxygenBar.direction;
 
         // A non-zero sizeDelta leaves a visible slice even when the slider is empty.
         RectTransform fill = oxygenBar.fillRect;

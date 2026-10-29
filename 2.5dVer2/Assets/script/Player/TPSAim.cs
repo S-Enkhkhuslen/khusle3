@@ -1,27 +1,21 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
-
 public class TPSAim : MonoBehaviour
 {
     [Header("Cinemachine Cameras")]
     [SerializeField] private CinemachineCamera normalCamera;
     [SerializeField] private CinemachineCamera aimCamera;
-
     [Header("References")]
     [SerializeField] private Camera mainCamera;
     [SerializeField] private GameObject crosshair;
-
     [Header("Camera Priority")]
     [SerializeField] private int activePriority = 20;
     [SerializeField] private int inactivePriority = 10;
-
     [Header("Player Rotation")]
     [SerializeField] private float rotationSpeed = 15f;
-
     public bool IsAiming { get; private set; }
     private PlayerHealth playerHealth;
-
     private void Awake()
     {
         playerHealth = GetComponent<PlayerHealth>();
@@ -34,13 +28,11 @@ public class TPSAim : MonoBehaviour
     private void Start()
     {
         SetAimState(false);
-
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    public void OnAim(
-        InputAction.CallbackContext context)
+    public void OnAim( InputAction.CallbackContext context)
     {
         if (playerHealth != null && playerHealth.IsDead)
         {
@@ -75,19 +67,16 @@ public class TPSAim : MonoBehaviour
     private void SetAimState(bool aiming)
     {
         IsAiming = aiming;
-
         if (normalCamera != null)
         {
-            normalCamera.Priority =
-                IsAiming
+            normalCamera.Priority = IsAiming
                     ? inactivePriority
                     : activePriority;
         }
 
         if (aimCamera != null)
         {
-            aimCamera.Priority =
-                IsAiming
+            aimCamera.Priority = IsAiming
                     ? activePriority
                     : inactivePriority;
         }
@@ -105,28 +94,15 @@ public class TPSAim : MonoBehaviour
             return;
         }
 
-        Vector3 lookDirection =
-            mainCamera.transform.forward;
-
+        Vector3 lookDirection = mainCamera.transform.forward;
         lookDirection.y = 0f;
-
         if (lookDirection.sqrMagnitude < 0.001f)
         {
             return;
         }
 
         lookDirection.Normalize();
-
-        Quaternion targetRotation =
-            Quaternion.LookRotation(
-                lookDirection,
-                Vector3.up
-            );
-
-        transform.rotation = Quaternion.Slerp(
-            transform.rotation,
-            targetRotation,
-            rotationSpeed * Time.deltaTime
-        );
+        Quaternion targetRotation = Quaternion.LookRotation( lookDirection, Vector3.up );
+        transform.rotation = Quaternion.Slerp( transform.rotation, targetRotation, rotationSpeed * Time.deltaTime );
     }
 }

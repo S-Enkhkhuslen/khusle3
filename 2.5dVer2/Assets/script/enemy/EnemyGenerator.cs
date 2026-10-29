@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
@@ -6,9 +7,9 @@ using UnityEngine.InputSystem;
 public class EnemyGenerator : MonoBehaviour
 {
     [Header("Spawn Enemy's")]
-    [SerializeField] public GameObject MeleePrefab;
-    [SerializeField] public GameObject RangePrefab;
-    [SerializeField] public GameObject FlyingPrefab;
+    public GameObject MeleePrefab;
+    public GameObject RangePrefab;
+    public GameObject FlyingPrefab;
 
     [Header("Spawn Point")]
     [SerializeField] private Transform Location;
@@ -20,7 +21,10 @@ public class EnemyGenerator : MonoBehaviour
     [SerializeField, Min(0.1f)] private float interactionRadius = 3f;
     [SerializeField, Min(0.1f)] private float interactionHeight = 4f;
 
-    [Header("Spawn Separation")]
+    [Header("Random Spawn")]
+    [SerializeField, Min(1)] private int minEnemyCount = 10;
+    [SerializeField, Min(1)] private int maxEnemyCount = 20;
+    [SerializeField, Min(1f)] private float spawnRadius = 20f;
     [SerializeField, Min(1f)] private float spawnSpacing = 3f;
     [SerializeField, Min(1f)] private float flyingSpawnHeight = 2f;
 
@@ -33,6 +37,7 @@ public class EnemyGenerator : MonoBehaviour
     private Material markerMaterial;
     private GUIStyle labelStyle;
     private Camera promptCamera;
+    private bool used;
 
     private void Start()
     {
@@ -52,9 +57,7 @@ public class EnemyGenerator : MonoBehaviour
         if (isPlayerInRange && Time.timeScale > 0f && Keyboard.current != null
             && Keyboard.current.eKey.wasPressedThisFrame)
         {
-            SpawnMelee();
-            SpawnRange();
-            SpawnFlying();
+            SpawnEnemies();
         }
     }
 
@@ -116,20 +119,58 @@ public class EnemyGenerator : MonoBehaviour
 
     public GameObject SpawnMelee()
     {
-        return SpawnEnemy(MeleePrefab, 0f, 0f, "Melee");
+        return SpawnEnemy(MeleePrefab, 0f, "Melee", null);
     }
 
     public GameObject SpawnRange()
     {
-        return SpawnEnemy(RangePrefab, -spawnSpacing, 0f, "Ranged");
+        return SpawnEnemy(RangePrefab, 0f, "Ranged", null);
     }
 
     public GameObject SpawnFlying()
     {
-        return SpawnEnemy(FlyingPrefab, spawnSpacing, flyingSpawnHeight, "Flying");
+        return SpawnEnemy(FlyingPrefab, flyingSpawnHeight, "Flying", null);
     }
 
-    private GameObject SpawnEnemy(GameObject prefab, float sideOffset, float height, string enemyType)
+    public void SpawnEnemies()
+    {
+        if (used) return;
+        var prefabs = new List<GameObject>();
+        if (MeleePrefab != null) prefabs.Add(MeleePrefab);
+        if (RangePrefab != null) prefabs.Add(RangePrefab);
+        if (FlyingPrefab != null) prefabs.Add(FlyingPrefab);
+        if (prefabs.Count == 0)
+        {
+            ReportSpawnIssue("No enemy prefabs are assigned.");
+            return;
+        }
+
+        int minimum = Mathf.Max(1, minEnemyCount);
+        int count = Random.Range(minimum, Mathf.Max(minimum, maxEnemyCount) + 1);
+        var positions = new List<Vector3>();
+        for (int i = 0; i < count; i++)
+        {
+            GameObject prefab = prefabs[Random.Range(0, prefabs.Count)];
+            float height = prefab == FlyingPrefab ? flyingSpawnHeight : 0f;
+            SpawnEnemy(prefab, height, prefab.name, positions);
+        }
+
+        if (positions.Count < count)
+            ReportSpawnIssue("Spawned " + positions.Count + "/" + count
+                + " enemies. Not enough free NavMesh space; increase Spawn Radius.");
+
+        if (positions.Count > 0)
+        {
+            used = true;
+            isPlayerInRange = false;
+            enabled = false;
+            CombatEffects.Spawn(GroundPosition(transform.position) + Vector3.up);
+            Destroy(gameObject);
+        }
+    }
+
+    private GameObject SpawnEnemy(GameObject prefab, float height, string enemyType,
+        List<Vector3> positions)
     {
         if (prefab == null)
         {
@@ -138,7 +179,7 @@ public class EnemyGenerator : MonoBehaviour
         }
 
         Transform spawnPoint = Location != null ? Location : transform;
-        Vector3 source = GroundPosition(spawnPoint.position + spawnPoint.right * sideOffset);
+        Vector3 center = GroundPosition(spawnPoint.position);
         NavMeshAgent prefabAgent = prefab.GetComponent<NavMeshAgent>();
         var filter = new NavMeshQueryFilter
         {
@@ -146,14 +187,62 @@ public class EnemyGenerator : MonoBehaviour
             areaMask = prefabAgent != null ? prefabAgent.areaMask : NavMesh.AllAreas
         };
 
-        if (!NavMesh.SamplePosition(source, out NavMeshHit hit,
-            Mathf.Max(0.1f, navMeshSearchRadius), filter))
+        float radius = Mathf.Max(1f, spawnRadius);
+        float spacing = Mathf.Max(1f, spawnSpacing);
+        for (int attempt = 0; attempt < 40; attempt++)
         {
-            ReportSpawnIssue("No NavMesh for " + enemyType + " near the spawn point.");
-            return null;
+            Vector2 offset = Random.insideUnitCircle * radius;
+            Vector3 source = GroundPosition(center + new Vector3(offset.x, 0f, offset.y));
+            if (!NavMesh.SamplePosition(source, out NavMeshHit hit,
+                Mathf.Max(0.1f, navMeshSearchRadius), filter))
+                continue;
+
+            // Sampling can move the point, so check the final position as well.
+            Vector2 fromCenter = new Vector2(hit.position.x - center.x, hit.position.z - center.z);
+            if (fromCenter.sqrMagnitude > radius * radius
+                || fromCenter.sqrMagnitude < spacing * spacing)
+                continue;
+
+            bool occupied = false;
+            if (positions != null)
+            {
+                foreach (Vector3 previous in positions)
+                {
+                    Vector2 difference = new Vector2(hit.position.x - previous.x,
+                        hit.position.z - previous.z);
+                    if (difference.sqrMagnitude < spacing * spacing)
+                    {
+                        occupied = true;
+                        break;
+                    }
+                }
+            }
+            if (occupied) continue;
+
+            Vector3 position = hit.position + Vector3.up * height;
+            // Avoid enemies from earlier presses and the player.
+            foreach (Collider nearby in Physics.OverlapSphere(position + Vector3.up,
+                spacing, ~0, QueryTriggerInteraction.Collide))
+            {
+                if (nearby.GetComponentInParent<Enemy>() != null
+                    || nearby.GetComponentInParent<PlayerHealth>() != null)
+                {
+                    occupied = true;
+                    break;
+                }
+            }
+            if (occupied) continue;
+
+            GameObject enemy = Instantiate(prefab, position,
+                Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
+            CombatEffects.Spawn(position + Vector3.up);
+            if (positions != null) positions.Add(hit.position);
+            return enemy;
         }
 
-        return Instantiate(prefab, hit.position + Vector3.up * height, spawnPoint.rotation);
+        if (positions == null)
+            ReportSpawnIssue("No free NavMesh space for " + enemyType + " inside Spawn Radius.");
+        return null;
     }
 
     private void ReportSpawnIssue(string message)
@@ -209,19 +298,7 @@ public class EnemyGenerator : MonoBehaviour
         if (promptCamera != null && promptCamera.isActiveAndEnabled)
             return promptCamera;
 
-        promptCamera = Camera.main;
-        if (promptCamera == null)
-        {
-            // The project's main camera is Untagged, so Camera.main can be null.
-            foreach (Camera camera in Camera.allCameras)
-            {
-                if (camera.cameraType == CameraType.Game && camera.targetTexture == null)
-                {
-                    promptCamera = camera;
-                    break;
-                }
-            }
-        }
+        promptCamera = StatusBarUI.FindGameCamera();
         return promptCamera;
     }
 
@@ -287,5 +364,8 @@ public class EnemyGenerator : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(Application.isPlaying ? interactionPosition : transform.position,
             Mathf.Max(0.1f, interactionRadius));
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(Location != null ? Location.position : transform.position,
+            Mathf.Max(1f, spawnRadius));
     }
 }

@@ -12,6 +12,7 @@ public class Sprint : MonoBehaviour
     private Controller playerController;
     private PlayerHealth playerHealth;
     private PlayerInput playerInput;
+    private InputAction sprintAction;
     private bool sprintButtonHeld;
     public bool IsSprinting { get; private set; }
     public float SpeedMultiplier => IsSprinting ? sprintSpeedMultiplier : 1f;
@@ -29,14 +30,18 @@ public class Sprint : MonoBehaviour
         sprintButtonHeld = context.ReadValueAsButton();
     }
 
+    private void Start()
+    {
+        sprintAction = playerInput != null && playerInput.actions != null
+            ? playerInput.actions.FindAction("Gameplay/Sprint", false) : null;
+    }
+
     // Evaluated independently of the jetpack; both can run in the same frame.
     public void Simulate(float deltaTime)
     {
         bool canReadInput = (playerHealth == null || !playerHealth.IsDead)
             && (playerInput == null || playerInput.inputIsActive);
-        InputAction action = playerInput != null && playerInput.actions != null
-            ? playerInput.actions.FindAction("Gameplay/Sprint", false) : null;
-        bool held = action != null ? action.IsPressed() : sprintButtonHeld;
+        bool held = sprintAction != null ? sprintAction.IsPressed() : sprintButtonHeld;
         held |= Keyboard.current != null
             && (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed);
         IsSprinting = canReadInput && held && playerController != null

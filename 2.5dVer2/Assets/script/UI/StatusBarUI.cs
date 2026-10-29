@@ -8,6 +8,9 @@ public class StatusBarUI
     private RectTransform fillRect;
     private Image fillImage;
     private Text valueText;
+    private int displayedCurrent = -1;
+    private int displayedMaximum = -1;
+    private string displayedLabel;
 
     public StatusBarUI(Transform parent, string name, Vector2 size, Color color, int fontSize)
     {
@@ -48,8 +51,15 @@ public class StatusBarUI
         float fraction = maximum > 0f ? Mathf.Clamp01(current / maximum) : 0f;
         fillRect.anchorMax = new Vector2(fraction, 1f);
         fillImage.enabled = fraction > 0f;
-        valueText.text = label + " " + Mathf.CeilToInt(Mathf.Max(0f, current))
-            + " / " + Mathf.CeilToInt(Mathf.Max(0f, maximum));
+        int currentNumber = Mathf.CeilToInt(Mathf.Max(0f, current));
+        int maximumNumber = Mathf.CeilToInt(Mathf.Max(0f, maximum));
+        if (currentNumber == displayedCurrent && maximumNumber == displayedMaximum
+            && label == displayedLabel) return;
+
+        displayedCurrent = currentNumber;
+        displayedMaximum = maximumNumber;
+        displayedLabel = label;
+        valueText.text = label + " " + currentNumber + " / " + maximumNumber;
     }
 
     private static RectTransform CreateRect(string name, Transform parent)

@@ -20,6 +20,8 @@ public class EnemyPatrol : MonoBehaviour
     private float waitUntil;
     private float combatSpeed;
     private float combatStoppingDistance;
+    private bool hasPatrolRoute;
+    private FlyingMovement flyingMovement;
 
     public bool IsPatrolling { get; private set; }
 
@@ -38,11 +40,26 @@ public class EnemyPatrol : MonoBehaviour
         {
             combatSpeed = agent.speed;
             combatStoppingDistance = agent.stoppingDistance;
+            hasPatrolRoute = TryResolvePoint(endPosition, out endPosition);
+            // Randomly spawned enemies can face a cliff. Try other directions.
+            if (!hasPatrolRoute && pointB == null)
+            {
+                for (int i = 1; i < 16 && !hasPatrolRoute; i++)
+                {
+                    Vector3 direction = Quaternion.Euler(0f, i * 22.5f, 0f) * transform.forward;
+                    hasPatrolRoute = TryResolvePoint(startPosition + direction * automaticPatrolDistance,
+                        out endPosition);
+                }
+            }
         }
-        else if (pointB == null && Physics.Raycast(endPosition + Vector3.up * 100f,
-            Vector3.down, out RaycastHit ground, 200f, 1 << 3))
+        else
         {
-            endPosition.y = Mathf.Max(endPosition.y, ground.point.y + 2f);
+            flyingMovement = GetComponent<FlyingMovement>();
+            if (flyingMovement == null) flyingMovement = gameObject.AddComponent<FlyingMovement>();
+            hasPatrolRoute = true;
+            if (pointB == null && Physics.Raycast(endPosition + Vector3.up * 100f,
+                Vector3.down, out RaycastHit ground, 200f, 1 << 3))
+                endPosition.y = Mathf.Max(endPosition.y, ground.point.y + 2f);
         }
     }
 
@@ -56,6 +73,14 @@ public class EnemyPatrol : MonoBehaviour
         if (sensor != null && sensor.PlayerDetected)
         {
             EndPatrol(false);
+            return;
+        }
+        if (!hasPatrolRoute)
+        {
+            EndPatrol(true);
+            if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+                agent.isStopped = true;
+            SetMoving(false);
             return;
         }
 
@@ -73,31 +98,12 @@ public class EnemyPatrol : MonoBehaviour
             return;
 
         Vector3 target = goingToB ? endPosition : startPosition;
-        if (agent != null)
-        {
-            if (!agent.isActiveAndEnabled || !agent.isOnNavMesh)
-                return;
-
-            if (Physics.Raycast(target + Vector3.up * 100f, Vector3.down,
-                out RaycastHit ground, 200f, 1 << 3))
-                target.y = ground.point.y;
-
-            var filter = new NavMeshQueryFilter
-            {
-                agentTypeID = agent.agentTypeID,
-                areaMask = agent.areaMask
-            };
-            if (!NavMesh.SamplePosition(target, out NavMeshHit hit, 5f, filter))
-            {
-                agent.isStopped = true;
-                SetMoving(false);
-                return;
-            }
-            target = hit.position;
-        }
+        if (agent != null && (!agent.isActiveAndEnabled || !agent.isOnNavMesh)) return;
 
         // Reach B, wait, then go back to A (and repeat).
-        if (Vector3.Distance(transform.position, target) <= 0.5f)
+        Vector3 distanceToTarget = target - transform.position;
+        if (agent != null) distanceToTarget.y = 0f;
+        if (distanceToTarget.sqrMagnitude <= 0.25f)
         {
             if (agent != null) agent.isStopped = true;
             goingToB = !goingToB;
@@ -116,15 +122,35 @@ public class EnemyPatrol : MonoBehaviour
         }
         else
         {
-            transform.position = Vector3.MoveTowards(transform.position, target,
-                patrolSpeed * Time.deltaTime);
-            SetMoving(Time.deltaTime > 0f);
+            Vector3 before = transform.position;
+            flyingMovement.MoveTowards(target, patrolSpeed);
+            SetMoving((transform.position - before).sqrMagnitude > 0.000001f);
         }
 
         direction.y = 0f;
         if (direction.sqrMagnitude > 0.001f)
             transform.rotation = Quaternion.Slerp(transform.rotation,
                 Quaternion.LookRotation(direction), 6f * Time.deltaTime);
+    }
+
+    private bool TryResolvePoint(Vector3 target, out Vector3 result)
+    {
+        result = startPosition;
+        if (!agent.isActiveAndEnabled || !agent.isOnNavMesh) return false;
+        if (Physics.Raycast(target + Vector3.up * 100f, Vector3.down,
+            out RaycastHit ground, 200f, 1 << 3)) target.y = ground.point.y;
+        var filter = new NavMeshQueryFilter
+        {
+            agentTypeID = agent.agentTypeID,
+            areaMask = agent.areaMask
+        };
+        var path = new NavMeshPath();
+        if (!NavMesh.SamplePosition(target, out NavMeshHit hit, 5f, filter)
+            || !NavMesh.CalculatePath(startPosition, hit.position, filter, path)
+            || path.status != NavMeshPathStatus.PathComplete
+            || (hit.position - startPosition).sqrMagnitude < 1f) return false;
+        result = hit.position;
+        return true;
     }
 
     private void SetMoving(bool moving)

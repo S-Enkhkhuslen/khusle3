@@ -10,6 +10,7 @@ public abstract class SweptProjectile : MonoBehaviour
     private float radius;
     private bool launched;
     private bool impacted;
+    private Color effectColor;
     protected Transform Owner { get; private set; }
 
     protected virtual void Awake()
@@ -38,6 +39,10 @@ public abstract class SweptProjectile : MonoBehaviour
             : Mathf.Max(0.025f, projectileCollider.bounds.extents.magnitude);
         radius = Mathf.Max(0.01f, radius);
         launched = true;
+        effectColor = owner != null && owner.GetComponent<PlayerHealth>() != null
+            ? CombatEffects.Blue : CombatEffects.Orange;
+        CombatEffects.AddTrail(gameObject, effectColor);
+        CombatEffects.Muzzle(transform.position, direction, effectColor);
         Destroy(gameObject, Mathf.Max(0.1f, lifeTime));
     }
 
@@ -47,7 +52,7 @@ public abstract class SweptProjectile : MonoBehaviour
         Vector3 position = body.position;
         // Sphere casts do not report colliders overlapping the start of the sweep.
         foreach (Collider other in Physics.OverlapSphere(position, radius, ~0, QueryTriggerInteraction.Collide))
-            if (TryHit(other)) return;
+            if (TryHit(other, position, -velocity.normalized)) return;
 
         Vector3 displacement = velocity * Time.fixedDeltaTime;
         float distance = displacement.magnitude;
@@ -59,7 +64,7 @@ public abstract class SweptProjectile : MonoBehaviour
         {
             if (ShouldIgnore(hit.collider)) continue;
             body.position = position + displacement.normalized * Mathf.Max(0f, hit.distance);
-            if (TryHit(hit.collider)) return;
+            if (TryHit(hit.collider, hit.point, hit.normal)) return;
         }
         body.MovePosition(position + displacement);
     }
@@ -72,10 +77,11 @@ public abstract class SweptProjectile : MonoBehaviour
             || IgnoreTarget(other);
     }
 
-    private bool TryHit(Collider other)
+    private bool TryHit(Collider other, Vector3 point, Vector3 normal)
     {
         if (impacted || ShouldIgnore(other)) return false;
         impacted = true; // Destruction is deferred; suppress every other callback this frame.
+        CombatEffects.Impact(point, normal, effectColor);
         OnImpact(other);
         projectileCollider.enabled = false;
         Destroy(gameObject);
@@ -84,12 +90,12 @@ public abstract class SweptProjectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (launched) TryHit(other);
+        if (launched) TryHit(other, body.position, -velocity.normalized);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (launched) TryHit(collision.collider);
+        if (launched) TryHit(collision.collider, body.position, -velocity.normalized);
     }
 
     protected abstract bool IgnoreTarget(Collider other);

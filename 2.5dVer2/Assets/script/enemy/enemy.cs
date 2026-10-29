@@ -15,8 +15,6 @@ public class Enemy : MonoBehaviour
     // Death animation дуусахыг хүлээх хугацаа
     [SerializeField] private float deathDelay = 3f;
 
-    // Melee Enemy-д contact damage-ийг унтрааж болно
-
     private bool isDead = false;
     public bool IsDead => isDead;
 
@@ -38,7 +36,7 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(float amount)
     {
-        if (isDead)
+        if (isDead || amount <= 0f)
             return;
 
         startingHealth = Mathf.Max(startingHealth, health);
@@ -59,27 +57,13 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    private void spawItem()
-    {
-        Vector3 spawnItem = new Vector3(
-            transform.position.x,
-            transform.position.y + 1,
-            transform.position.z
-        );
-
-        GameObject TankClone = Instantiate(
-            Tank,
-            spawnItem,
-            Quaternion.identity
-        );
-    }
-
     void Die()
     {
         if (isDead)
             return;
 
         isDead = true;
+        CombatEffects.Death(transform.position + Vector3.up);
 
         // Бусад AI script-д Enemy үхсэнийг мэдэгдэнэ
         OnEnemyDied?.Invoke();
@@ -104,7 +88,7 @@ public class Enemy : MonoBehaviour
         // Item drop систем
         if (Tank != null)
         {
-            spawItem();
+            Instantiate(Tank, transform.position + Vector3.up, Quaternion.identity);
         }
 
         Destroy(gameObject);

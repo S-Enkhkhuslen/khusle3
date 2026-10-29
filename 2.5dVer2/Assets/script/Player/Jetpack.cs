@@ -16,6 +16,7 @@ public class Jetpack : MonoBehaviour
     private Oxygen oxygen;
     private PlayerHealth playerHealth;
     private PlayerInput playerInput;
+    private InputAction jumpAction;
     private bool jetButtonHeld;
     private float verticalVelocity;
     public float VerticalVelocity => verticalVelocity;
@@ -34,14 +35,18 @@ public class Jetpack : MonoBehaviour
         jetButtonHeld = context.ReadValueAsButton();
     }
 
+    private void Start()
+    {
+        jumpAction = playerInput != null && playerInput.actions != null
+            ? playerInput.actions.FindAction("Gameplay/jump", false) : null;
+    }
+
     // Controller calls this once, before applying the combined movement.
     public void Simulate(float deltaTime)
     {
         bool canReadInput = (playerHealth == null || !playerHealth.IsDead)
             && (playerInput == null || playerInput.inputIsActive);
-        InputAction jump = playerInput != null && playerInput.actions != null
-            ? playerInput.actions.FindAction("Gameplay/jump", false) : null;
-        bool held = jump != null ? jump.IsPressed() : jetButtonHeld;
+        bool held = jumpAction != null ? jumpAction.IsPressed() : jetButtonHeld;
         // Space remains independent of Shift and of an input callback's phase.
         held |= Keyboard.current != null && Keyboard.current.spaceKey.isPressed;
         IsJetting = canReadInput && held && oxygen != null && oxygen.HasOxygen;

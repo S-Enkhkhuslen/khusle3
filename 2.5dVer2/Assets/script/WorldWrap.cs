@@ -23,9 +23,10 @@ public class WorldWrap : MonoBehaviour
             terrain = Terrain.activeTerrain;
         }
 
-        if (terrain == null)
+        if (terrain == null || terrain.terrainData == null)
         {
             Debug.LogError("WorldWrap: Terrain олдсонгүй!");
+            enabled = false;
             return;
         }
 
@@ -33,8 +34,6 @@ public class WorldWrap : MonoBehaviour
         terrainPosition = terrain.transform.position;
         terrainSize = terrain.terrainData.size;
 
-        Debug.Log($"Terrain X: {terrainPosition.x} ~ {terrainPosition.x + terrainSize.x}");
-        Debug.Log($"Terrain Z: {terrainPosition.z} ~ {terrainPosition.z + terrainSize.z}");
     }
 
     private void LateUpdate()

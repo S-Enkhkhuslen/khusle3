@@ -1,28 +1,22 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
-
 [RequireComponent(typeof(CharacterController))]
 public class Controller : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private float speed = 5f;
-
     [Header("Rotation")]
     [SerializeField] private bool shouldFaceMoveDirection = true;
     [SerializeField] private float rotationSpeed = 10f;
-
     private CharacterController characterController;
     private Jetpack jetpack;
     private Sprint sprint;
     private TPSAim tpsAim;
     private PlayerHealth playerHealth;
-
     private Vector2 moveInput;
     private Vector3 moveDirection;
-
     public Vector3 MoveDirection => moveDirection;
-
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
@@ -56,49 +50,35 @@ public class Controller : MonoBehaviour
 
         Vector3 cameraForward = cameraTransform.forward;
         Vector3 cameraRight = cameraTransform.right;
-
         cameraForward.y = 0f;
         cameraRight.y = 0f;
-
         cameraForward.Normalize();
         cameraRight.Normalize();
-
-        moveDirection =
-            cameraForward * moveInput.y +
-            cameraRight * moveInput.x;
-
-        moveDirection =
-            Vector3.ClampMagnitude(moveDirection, 1f);
+        moveDirection = cameraForward * moveInput.y + cameraRight * moveInput.x;
+        moveDirection = Vector3.ClampMagnitude(moveDirection, 1f);
     }
 
     private void MovePlayer()
     {
         float currentSpeed = speed;
-
         if (sprint != null)
         {
             currentSpeed *= sprint.SpeedMultiplier;
         }
 
-        Vector3 finalVelocity =
-            moveDirection * currentSpeed;
-
+        Vector3 finalVelocity = moveDirection * currentSpeed;
         if (jetpack != null)
         {
-            finalVelocity.y =
-                jetpack.VerticalVelocity;
+            finalVelocity.y = jetpack.VerticalVelocity;
         }
 
-        characterController.Move(
-            finalVelocity * Time.deltaTime
-        );
+        characterController.Move( finalVelocity * Time.deltaTime );
     }
 
     private void RotatePlayer()
     {
         if (playerHealth != null && playerHealth.IsDead)
             return;
-
         if (tpsAim != null && tpsAim.IsAiming)
         {
             return;
@@ -114,16 +94,7 @@ public class Controller : MonoBehaviour
             return;
         }
 
-        Quaternion targetRotation =
-            Quaternion.LookRotation(
-                moveDirection,
-                Vector3.up
-            );
-
-        transform.rotation = Quaternion.Slerp(
-            transform.rotation,
-            targetRotation,
-            rotationSpeed * Time.deltaTime
-        );
+        Quaternion targetRotation = Quaternion.LookRotation( moveDirection, Vector3.up );
+        transform.rotation = Quaternion.Slerp( transform.rotation, targetRotation, rotationSpeed * Time.deltaTime );
     }
 }
