@@ -8,6 +8,7 @@ public static class CombatEffects
     public static readonly Color Orange = new Color(1f, 0.38f, 0.06f);
     private static Material material;
     private static Texture2D texture;
+    public static Material ParticleMaterial => GetMaterial();
 
     public static void Muzzle(Vector3 position, Vector3 direction, Color color)
     {
@@ -42,6 +43,53 @@ public static class CombatEffects
         trail.colorGradient = Fade(color);
         trail.shadowCastingMode = ShadowCastingMode.Off;
         trail.receiveShadows = false;
+    }
+
+    public static void AddBlueGlow(GameObject projectile)
+    {
+        if (projectile.transform.Find("Blue Projectile Halo") != null) return;
+        // Override this projectile's colour without changing its shared material.
+        foreach (Renderer renderer in projectile.GetComponentsInChildren<MeshRenderer>())
+        {
+            var tint = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(tint);
+            tint.SetColor("_BaseColor", Blue);
+            tint.SetColor("_Color", Blue);
+            tint.SetColor("_EmissionColor", Blue * 4f);
+            renderer.SetPropertyBlock(tint);
+        }
+        Light light = projectile.GetComponent<Light>();
+        if (light == null) light = projectile.AddComponent<Light>();
+        light.type = LightType.Point;
+        light.color = Blue;
+        light.range = 3.5f;
+        light.intensity = 2.5f;
+        light.shadows = LightShadows.None;
+
+        var halo = new GameObject("Blue Projectile Halo");
+        halo.transform.SetParent(projectile.transform, false);
+        ParticleSystem particles = halo.AddComponent<ParticleSystem>();
+        particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        var main = particles.main;
+        main.loop = true;
+        main.playOnAwake = false;
+        main.startLifetime = 0.12f;
+        main.startSpeed = 0f;
+        main.startSize = 0.65f;
+        main.startColor = new Color(Blue.r, Blue.g, Blue.b, 0.28f);
+        main.simulationSpace = ParticleSystemSimulationSpace.Local;
+        main.scalingMode = ParticleSystemScalingMode.Shape;
+        main.maxParticles = 6;
+        var shape = particles.shape;
+        shape.enabled = false;
+        var emission = particles.emission;
+        emission.rateOverTime = 30f;
+        var haloRenderer = particles.GetComponent<ParticleSystemRenderer>();
+        haloRenderer.sharedMaterial = ParticleMaterial;
+        haloRenderer.shadowCastingMode = ShadowCastingMode.Off;
+        haloRenderer.receiveShadows = false;
+        particles.Play();
+        particles.Emit(1);
     }
 
     private static void Burst(string name, Vector3 position, Vector3 direction,

@@ -7,6 +7,7 @@ public class Bullet : SweptProjectile
     {
         damage = Mathf.Max(0f, damageAmount);
         Initialize(direction, speed, owner);
+        CombatEffects.AddBlueGlow(gameObject);
     }
 
     protected override bool IgnoreTarget(Collider other)

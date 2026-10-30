@@ -6,6 +6,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] GameObject Tank;
     public float health = 100f;
     private float startingHealth;
+    private CharacterEffects effects;
     public float MaxHealth => Mathf.Max(startingHealth, health);
 
     // ANIMATION: Animator байгаа Enemy л animation тоглуулна
@@ -26,6 +27,8 @@ public class Enemy : MonoBehaviour
         startingHealth = Mathf.Max(1f, health);
         if (GetComponent<EnemyHealthBar>() == null)
             gameObject.AddComponent<EnemyHealthBar>();
+        effects = GetComponent<CharacterEffects>();
+        if (effects == null) effects = gameObject.AddComponent<CharacterEffects>();
 
         // Animator Inspector дээр холбоогүй бол Child-аас хайна
         if (animator == null)
@@ -41,6 +44,7 @@ public class Enemy : MonoBehaviour
 
         startingHealth = Mathf.Max(startingHealth, health);
         health -= amount;
+        effects?.FlashDamage();
 
         if (health <= 0f)
         {
@@ -63,6 +67,7 @@ public class Enemy : MonoBehaviour
             return;
 
         isDead = true;
+        GameScore.RegisterKill();
         CombatEffects.Death(transform.position + Vector3.up);
 
         // Бусад AI script-д Enemy үхсэнийг мэдэгдэнэ

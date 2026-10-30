@@ -52,8 +52,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySensor
   sensorPoint: {fileID: 1658098839449779193}
-  viewDistance: 25
-  viewAngle: 120
+  viewDistance: 50
+  viewAngle: 160
   playerTargetHeight: 0
   sensorMask:
     serializedVersion: 2

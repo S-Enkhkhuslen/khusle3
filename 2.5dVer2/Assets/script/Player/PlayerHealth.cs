@@ -6,6 +6,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float maxHealth = 100f;
     private float currentHealth;
     private PlayerAnimationController playerAnimation;
+    private CharacterEffects effects;
 
     public bool IsDead { get; private set; }
     public float CurrentHealth => currentHealth;
@@ -17,6 +18,8 @@ public class PlayerHealth : MonoBehaviour
         playerAnimation = GetComponent<PlayerAnimationController>();
         if (GetComponent<PlayerHUD>() == null)
             gameObject.AddComponent<PlayerHUD>();
+        effects = GetComponent<CharacterEffects>();
+        if (effects == null) effects = gameObject.AddComponent<CharacterEffects>();
     }
 
     public void TakeDamage(float damage)
@@ -25,6 +28,7 @@ public class PlayerHealth : MonoBehaviour
             return;
 
         currentHealth = Mathf.Max(0f, currentHealth - damage);
+        effects?.FlashDamage();
         Debug.Log("Player Health: " + currentHealth);
         if (currentHealth <= 0f)
             Die();

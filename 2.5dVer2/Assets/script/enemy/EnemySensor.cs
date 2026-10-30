@@ -5,8 +5,8 @@ public class EnemySensor : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform sensorPoint;
     [Header("Sensor Settings")]
-    [SerializeField] private float viewDistance = 25f;
-    [SerializeField, Range(0f, 360f)] private float viewAngle = 120f;
+    [SerializeField] private float viewDistance = 50f;
+    [SerializeField, Range(0f, 360f)] private float viewAngle = 160f;
     [SerializeField] private float playerTargetHeight = 1f;
     [SerializeField] private LayerMask sensorMask;
     [Header("Detection Memory")]
