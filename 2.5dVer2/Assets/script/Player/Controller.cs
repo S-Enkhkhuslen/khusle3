@@ -72,7 +72,8 @@ public class Controller : MonoBehaviour
             finalVelocity.y = jetpack.VerticalVelocity;
         }
 
-        characterController.Move( finalVelocity * Time.deltaTime );
+        CollisionFlags collisions = characterController.Move(finalVelocity * Time.deltaTime);
+        jetpack?.HandleCollisions(collisions);
     }
 
     private void RotatePlayer()

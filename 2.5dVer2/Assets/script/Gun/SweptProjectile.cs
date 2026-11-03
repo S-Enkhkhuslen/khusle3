@@ -43,6 +43,7 @@ public abstract class SweptProjectile : MonoBehaviour
             ? CombatEffects.Blue : CombatEffects.Orange;
         CombatEffects.AddTrail(gameObject, effectColor);
         CombatEffects.Muzzle(transform.position, direction, effectColor);
+        GameAudio.Shot(transform.position, owner != null && owner.GetComponent<PlayerHealth>() != null);
         Destroy(gameObject, Mathf.Max(0.1f, lifeTime));
     }
 
@@ -82,6 +83,7 @@ public abstract class SweptProjectile : MonoBehaviour
         if (impacted || ShouldIgnore(other)) return false;
         impacted = true; // Destruction is deferred; suppress every other callback this frame.
         CombatEffects.Impact(point, normal, effectColor);
+        GameAudio.Impact(point);
         OnImpact(other);
         projectileCollider.enabled = false;
         Destroy(gameObject);

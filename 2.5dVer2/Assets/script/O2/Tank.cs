@@ -17,6 +17,7 @@ public class Tank : MonoBehaviour
         if (oxygen == null) return;
         collected = true;
         oxygen.AddOxygen(oxygenAmount);
+        GameAudio.CollectOxygen();
         Destroy(gameObject);
     }
 }

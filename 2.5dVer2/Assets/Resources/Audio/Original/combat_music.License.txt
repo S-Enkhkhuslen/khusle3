@@ -1,0 +1,14 @@
+Fast fight / battle music (looped)
+Composer: Ville Nousiainen / Xythe / mutkanto
+Loop edit: XCVG
+License: CC0 1.0 Universal
+https://creativecommons.org/publicdomain/zero/1.0/
+Original: https://opengameart.org/content/fast-fight-battle-music
+Loop: https://opengameart.org/content/fast-fight-battle-music-looped
+Download: https://opengameart.org/sites/default/files/fight_looped.wav
+Composer: https://soundcloud.com/mutkanto
+Loop editor: https://xcvgsystems.com
+Downloaded 2026-11-03. Composer and editor credits retained voluntarily.
+Game adaptation: peak gain (0.88 peak), 3 ms loop-edge de-click, PCM16 export.
+No pitch or speed change.
+The downloaded recording replaces the former original synthesized combat music.

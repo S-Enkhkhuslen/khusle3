@@ -58,7 +58,10 @@ public class PlayerAnimationController : MonoBehaviour
         }
         // Зөвхөн агаараас хангалттай хурдтай буухад Land тоглоно.
         if (!wasGrounded && grounded && previousVerticalSpeed < -landingMinFallSpeed)
+        {
             animator.SetTrigger("Land");
+            GameAudio.Landed(transform.position);
+        }
         wasGrounded = grounded;
         previousVerticalSpeed = verticalSpeed;
     }

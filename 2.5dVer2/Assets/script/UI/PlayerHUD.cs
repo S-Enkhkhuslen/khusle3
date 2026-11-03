@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 [DisallowMultipleComponent]
 public class PlayerHUD : MonoBehaviour
@@ -17,6 +18,9 @@ public class PlayerHUD : MonoBehaviour
     private int displayedScore = -1;
     private int displayedCombo = -1;
     private int displayedTenths = -1;
+    private bool deathScreenShown;
+    private CursorLockMode previousCursorLock;
+    private bool previousCursorVisible;
 
     private void Start()
     {
@@ -45,6 +49,25 @@ public class PlayerHUD : MonoBehaviour
     private void LateUpdate()
     {
         RefreshBars();
+        if (health == null || !health.IsDead) return;
+        if (!deathScreenShown)
+        {
+            deathScreenShown = true;
+            previousCursorLock = Cursor.lockState;
+            previousCursorVisible = Cursor.visible;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        if (GameEndScreen.HandleInput())
+            GameEndScreen.Restart();
+    }
+
+    private void OnGUI()
+    {
+        if (health != null && health.IsDead
+            && GameEndScreen.Draw("YOU DIED", "Try again and reach the escape rocket.",
+                GameScore.TotalScore, new Color(1f, 0.3f, 0.2f)))
+            GameEndScreen.Restart();
     }
 
     private void RefreshBars()
@@ -147,6 +170,11 @@ public class PlayerHUD : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (deathScreenShown)
+        {
+            Cursor.lockState = previousCursorLock;
+            Cursor.visible = previousCursorVisible;
+        }
         if (canvas != null) Destroy(canvas.gameObject);
     }
 }

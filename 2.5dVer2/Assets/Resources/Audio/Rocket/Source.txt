@@ -1,0 +1,16 @@
+Launch roar — NASA, Discovery STS-131: Sound of Launch
+Source collection: https://www.nasa.gov/historical-sounds/
+Original: https://www.nasa.gov/wp-content/uploads/2015/01/590189main_ringtone_131_launchNats.mp3
+Usage guidelines: https://www.nasa.gov/nasa-brand-center/images-and-media/
+Accessed: 2026-11-03
+
+Credit: NASA. Adapted for this game's rocket launch.
+This is an actual space-shuttle launch recording, not a synthesized engine.
+NASA media generally is not subject to copyright in the United States;
+NASA's media usage guidelines apply. No NASA endorsement is implied.
+No logos, narration, or identifiable people are included in this excerpt.
+
+Edits: excerpt from 1–9 seconds, subsonic cleanup, mild low-frequency EQ,
+high-frequency softening, peak normalization to 0.93, 350 ms loop crossfade.
+Output: 44.1 kHz stereo PCM16, 7.65 seconds. The game fades the source in/out
+using unscaled time and keeps the original recording's pitch.

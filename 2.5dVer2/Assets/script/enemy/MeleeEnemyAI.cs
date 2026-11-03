@@ -137,6 +137,7 @@ public class MeleeEnemyAI : MonoBehaviour
         if (Time.time < nextAttackTime)
             return;
         nextAttackTime = Time.time + attackCooldown;
+        GameAudio.MeleeSwing(transform.position);
         if (animator != null)
         {
             animator.SetTrigger("Attack");

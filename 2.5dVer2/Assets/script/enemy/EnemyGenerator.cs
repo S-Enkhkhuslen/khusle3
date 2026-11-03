@@ -28,6 +28,9 @@ public class EnemyGenerator : MonoBehaviour
     [SerializeField, Min(1f)] private float spawnSpacing = 3f;
     [SerializeField, Min(1f)] private float flyingSpawnHeight = 2f;
 
+    [Header("Level Finish")]
+    [SerializeField] private bool unlockEscapeRocket;
+
     private Vector3 interactionPosition;
     private bool isPlayerInRange;
     private float nextGroundRefresh;
@@ -148,11 +151,13 @@ public class EnemyGenerator : MonoBehaviour
         int minimum = Mathf.Max(1, minEnemyCount);
         int count = Random.Range(minimum, Mathf.Max(minimum, maxEnemyCount) + 1);
         var positions = new List<Vector3>();
+        var spawnedEnemies = new List<Enemy>();
         for (int i = 0; i < count; i++)
         {
             GameObject prefab = prefabs[Random.Range(0, prefabs.Count)];
             float height = prefab == FlyingPrefab ? flyingSpawnHeight : 0f;
-            SpawnEnemy(prefab, height, prefab.name, positions);
+            GameObject spawned = SpawnEnemy(prefab, height, prefab.name, positions);
+            if (spawned != null && spawned.TryGetComponent(out Enemy enemy)) spawnedEnemies.Add(enemy);
         }
 
         if (positions.Count < count)
@@ -165,6 +170,13 @@ public class EnemyGenerator : MonoBehaviour
             isPlayerInRange = false;
             enabled = false;
             CombatEffects.Spawn(GroundPosition(transform.position) + Vector3.up);
+            GameAudio.RegisterBattle(spawnedEnemies);
+            GameAudio.GeneratorActivated(GroundPosition(transform.position));
+            if (unlockEscapeRocket)
+            {
+                FindPlayer();
+                EscapeRocket.Spawn(GroundPosition(transform.position), player);
+            }
             Destroy(gameObject);
         }
     }

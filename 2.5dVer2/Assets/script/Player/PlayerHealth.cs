@@ -15,6 +15,8 @@ public class PlayerHealth : MonoBehaviour
     private void Awake()
     {
         currentHealth = maxHealth;
+        GameAudio.BindPlayer(this);
+        PlanetDustWeather.Follow(transform);
         playerAnimation = GetComponent<PlayerAnimationController>();
         if (GetComponent<PlayerHUD>() == null)
             gameObject.AddComponent<PlayerHUD>();
@@ -29,6 +31,7 @@ public class PlayerHealth : MonoBehaviour
 
         currentHealth = Mathf.Max(0f, currentHealth - damage);
         effects?.FlashDamage();
+        GameAudio.PlayerHurt();
         Debug.Log("Player Health: " + currentHealth);
         if (currentHealth <= 0f)
             Die();
@@ -42,6 +45,8 @@ public class PlayerHealth : MonoBehaviour
             return;
 
         IsDead = true;
+        GameScore.FinishRun(false);
+        GameAudio.PlayerDied();
         Debug.Log("PLAYER DEAD");
         GetComponent<PlayerInput>()?.DeactivateInput();
         GetComponent<Sprint>()?.StopSprinting();

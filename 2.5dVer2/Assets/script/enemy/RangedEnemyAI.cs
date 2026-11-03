@@ -209,6 +209,7 @@ public class RangedEnemyAI : MonoBehaviour
         if (Time.time < nextMeleeTime)
             return;
         nextMeleeTime = Time.time + meleeCooldown;
+        GameAudio.MeleeSwing(transform.position);
         if (animator != null)
         {
             animator.SetTrigger("Attack");

@@ -69,6 +69,14 @@ public class Jetpack : MonoBehaviour
         verticalVelocity = Mathf.Min(0f, verticalVelocity);
     }
 
+    public void HandleCollisions(CollisionFlags collisions)
+    {
+        // Move stops at a ceiling, so the stored upward speed must stop too.
+        // Otherwise releasing Space leaves the player pinned there until gravity catches up.
+        if ((collisions & CollisionFlags.Above) != 0 && verticalVelocity > 0f)
+            verticalVelocity = 0f;
+    }
+
     public void ResetVerticalVelocity()
     {
         verticalVelocity = groundedForce;

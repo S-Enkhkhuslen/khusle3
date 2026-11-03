@@ -68,6 +68,7 @@ public class Enemy : MonoBehaviour
 
         isDead = true;
         GameScore.RegisterKill();
+        GameAudio.EnemyDied(transform.position);
         CombatEffects.Death(transform.position + Vector3.up);
 
         // Бусад AI script-д Enemy үхсэнийг мэдэгдэнэ

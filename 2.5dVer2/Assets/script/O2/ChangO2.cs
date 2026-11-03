@@ -17,6 +17,7 @@ public class ChangeO2 : MonoBehaviour
         if (oxygen == null) return;
         collected = true;
         oxygen.ChangeConsume(consumptionChange);
+        GameAudio.CollectOxygen(true);
         Destroy(gameObject);
     }
 }

@@ -33,6 +33,12 @@ public class CharacterEffects : MonoBehaviour
     private Vector3 previousPosition;
     private float distanceSinceStep;
     private bool leftStep;
+    private float nextFootstep;
+    private Animator playerAnimator;
+    private bool stepSynced;
+    private int previousAnimationStep;
+    // OxygenTrooper_Walk's boots reach their contact poses at 25% and 75%.
+    private const float FootContactPhase = 0.25f;
     private float flashUntil;
     private float flashStarted;
     private bool tinted;
@@ -53,6 +59,7 @@ public class CharacterEffects : MonoBehaviour
         sprint = GetComponent<Sprint>();
         oxygen = GetComponent<Oxygen>();
         health = GetComponent<PlayerHealth>();
+        if (health != null) playerAnimator = GetComponentInChildren<Animator>();
         enemy = GetComponent<Enemy>();
         agent = GetComponent<NavMeshAgent>();
         flyingEnemy = GetComponent<FlyingEnemyAI>() != null;
@@ -134,10 +141,33 @@ public class CharacterEffects : MonoBehaviour
         displacement.y = 0f;
         bool jetting = alive && (flyingEnemy || (jetpack != null && jetpack.IsJetting));
         bool sprinting = alive && sprint != null && sprint.IsSprinting;
+        UpdatePlayerFootsteps(displacement, alive && !jetting && !sprinting);
         UpdateDust(displacement, alive && !jetting);
         UpdateJets(jetting, sprinting);
         bool red = Time.time < flashUntil && Mathf.Repeat(Time.time - flashStarted, 0.15f) < 0.09f;
         SetTint(red);
+    }
+
+    private void UpdatePlayerFootsteps(Vector3 displacement, bool active)
+    {
+        if (health == null) return;
+        if (!active || Time.deltaTime <= 0f || body == null || !body.isGrounded
+            || displacement.sqrMagnitude < 0.000001f || displacement.sqrMagnitude > 4f
+            || playerAnimator == null || !playerAnimator.isActiveAndEnabled)
+        { stepSynced = false; return; }
+        var state = playerAnimator.GetCurrentAnimatorStateInfo(0);
+        if (!state.IsName("Locomotion") || playerAnimator.GetFloat("Speed") < 0.15f)
+        { stepSynced = false; return; }
+        // Two contacts per walk cycle follow the Animator, including speed changes.
+        int step = Mathf.FloorToInt((state.normalizedTime - FootContactPhase) * 2f);
+        if (!stepSynced || step < previousAnimationStep)
+        { previousAnimationStep = step; stepSynced = true; return; }
+        if (step == previousAnimationStep) return;
+        previousAnimationStep = step;
+        Vector3 feet = transform.TransformPoint(body.center - Vector3.up * body.height * 0.5f);
+        if (Physics.Raycast(feet + Vector3.up * 0.4f, Vector3.down, out RaycastHit hit,
+            0.8f, groundMask.value | 1, QueryTriggerInteraction.Ignore))
+            GameAudio.Footstep(hit.point, true, (groundMask.value & (1 << hit.collider.gameObject.layer)) == 0);
     }
 
     private void UpdateDust(Vector3 displacement, bool active)
@@ -159,7 +189,14 @@ public class CharacterEffects : MonoBehaviour
             ? transform.TransformPoint(body.center - Vector3.up * body.height * 0.5f) : transform.position)
             + transform.right * (leftStep ? -0.16f : 0.16f);
         if (!Physics.Raycast(feet + Vector3.up * 0.4f, Vector3.down, out RaycastHit hit,
-            0.8f, groundMask, QueryTriggerInteraction.Ignore)) return;
+            0.8f, groundMask.value | 1, QueryTriggerInteraction.Ignore)) return;
+        bool terrainSurface = (groundMask.value & (1 << hit.collider.gameObject.layer)) != 0;
+        if (health == null && Time.time >= nextFootstep)
+        {
+            GameAudio.Footstep(hit.point, health != null, !terrainSurface);
+            nextFootstep = Time.time + (sprint != null && sprint.IsSprinting ? 0.25f : 0.38f);
+        }
+        if (!terrainSurface) return;
         if (!dust.isPlaying) dust.Play();
         for (int i = 0; i < Mathf.Max(1, dustParticlesPerStep); i++)
         {
@@ -253,6 +290,7 @@ public class CharacterEffects : MonoBehaviour
     {
         flashUntil = 0f;
         distanceSinceStep = 0f;
+        nextFootstep = 0f;
         SetTint(false);
         if (dust != null) dust.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         foreach (ParticleSystem jet in jets)
