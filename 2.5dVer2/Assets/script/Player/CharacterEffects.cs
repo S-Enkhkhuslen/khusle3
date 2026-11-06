@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Rendering;
@@ -39,18 +38,7 @@ public class CharacterEffects : MonoBehaviour
     private int previousAnimationStep;
     // OxygenTrooper_Walk's boots reach their contact poses at 25% and 75%.
     private const float FootContactPhase = 0.25f;
-    private float flashUntil;
-    private float flashStarted;
-    private bool tinted;
-    private readonly List<TintTarget> tintTargets = new List<TintTarget>();
-
-    private class TintTarget
-    {
-        public Renderer renderer;
-        public int index;
-        public MaterialPropertyBlock original;
-        public MaterialPropertyBlock red;
-    }
+    private DamageFlash flash;
 
     private void Awake()
     {
@@ -63,31 +51,13 @@ public class CharacterEffects : MonoBehaviour
         enemy = GetComponent<Enemy>();
         agent = GetComponent<NavMeshAgent>();
         flyingEnemy = GetComponent<FlyingEnemyAI>() != null;
-        foreach (Renderer renderer in GetComponentsInChildren<Renderer>(true))
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        flash = new DamageFlash(renderers, damageColor);
+        foreach (Renderer renderer in renderers)
         {
             if (renderer.name == "L_ThrusterGlow") nozzles[0] = renderer;
             if (renderer.name == "R_ThrusterGlow") nozzles[1] = renderer;
             if (flyingEnemy && renderer.name == "Thruster_light") nozzles[0] = renderer;
-            if (!(renderer is MeshRenderer) && !(renderer is SkinnedMeshRenderer)) continue;
-            Material[] materials = renderer.sharedMaterials;
-            for (int i = 0; i < materials.Length; i++)
-            {
-                Material material = materials[i];
-                if (material == null) continue;
-                string property = material.HasProperty("_BaseColor") ? "_BaseColor"
-                    : material.HasProperty("_Color") ? "_Color" : null;
-                if (property == null) continue;
-                var original = new MaterialPropertyBlock();
-                renderer.GetPropertyBlock(original, i);
-                var red = new MaterialPropertyBlock();
-                renderer.GetPropertyBlock(red, i);
-                if (red.isEmpty) renderer.GetPropertyBlock(red);
-                Color color = damageColor;
-                color.a = material.GetColor(property).a;
-                red.SetColor(property, color);
-                if (material.HasProperty("_EmissionColor")) red.SetColor("_EmissionColor", color * 0.5f);
-                tintTargets.Add(new TintTarget { renderer = renderer, index = i, original = original, red = red });
-            }
         }
     }
 
@@ -144,8 +114,7 @@ public class CharacterEffects : MonoBehaviour
         UpdatePlayerFootsteps(displacement, alive && !jetting && !sprinting);
         UpdateDust(displacement, alive && !jetting);
         UpdateJets(jetting, sprinting);
-        bool red = Time.time < flashUntil && Mathf.Repeat(Time.time - flashStarted, 0.15f) < 0.09f;
-        SetTint(red);
+        flash?.Update();
     }
 
     private void UpdatePlayerFootsteps(Vector3 displacement, bool active)
@@ -234,20 +203,7 @@ public class CharacterEffects : MonoBehaviour
 
     public void FlashDamage()
     {
-        if (!isActiveAndEnabled) return;
-        flashStarted = Time.time;
-        flashUntil = Time.time + Mathf.Max(0.1f, flashDuration);
-        SetTint(true);
-    }
-
-    private void SetTint(bool red)
-    {
-        if (tinted == red) return;
-        tinted = red;
-        foreach (TintTarget target in tintTargets)
-            if (target.renderer != null)
-                target.renderer.SetPropertyBlock(red ? target.red
-                    : target.original.isEmpty ? null : target.original, target.index);
+        if (isActiveAndEnabled) flash?.Trigger(flashDuration);
     }
 
     private ParticleSystem CreateParticles(string name, float lifetime, float size, Color color)
@@ -288,10 +244,9 @@ public class CharacterEffects : MonoBehaviour
 
     private void OnDisable()
     {
-        flashUntil = 0f;
         distanceSinceStep = 0f;
         nextFootstep = 0f;
-        SetTint(false);
+        flash?.Clear();
         if (dust != null) dust.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         foreach (ParticleSystem jet in jets)
             if (jet != null) jet.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 // Scene-local audio service. Sources live here so destroying a projectile,
 // pickup, generator or boarded player does not cut its sound off.
@@ -14,14 +13,17 @@ public sealed class GameAudio : MonoBehaviour
     private const int VoiceCount = 20;
     private const float MusicTrackGain = 1.25f;
     private static GameAudio instance;
+    public static GameAudio Existing => instance;
+    public bool IsPaused => paused;
+    public bool IsMuted => muted;
+    public bool HasActivePlayer => player != null && player.isActiveAndEnabled && !player.IsDead && !gameFinished && !rocketActive;
     private static readonly System.Random variation = new System.Random();
     private readonly AudioSource[] voices = new AudioSource[VoiceCount];
     private readonly double[] voiceEnds = new double[VoiceCount];
     private readonly float[] voiceLevels = new float[VoiceCount];
-    private AudioClip[] playerShots, enemyShots, impacts;
-    private AudioClip[] dustSteps, hardSteps, punches;
-    private AudioClip ignition, jetLoop, field, pickup, latch, boom, rocketLoop, warning;
-    private AudioClip victory, defeat, swing;
+    private GameSounds sounds;
+    private readonly PauseState pauseState = new PauseState();
+    private readonly UIKeyActions keys = new UIKeyActions();
     private AudioSource jetSource, warningSource, rocketSource;
     private AudioSource musicSource, windSource, combatSource;
     private AudioSource sprintSource;
@@ -33,12 +35,7 @@ public sealed class GameAudio : MonoBehaviour
     private bool wasJetting, rocketActive, gameFinished, paused, muted, settingsDirty;
     private readonly List<Enemy> battleEnemies = new List<Enemy>();
     private bool battleActive;
-    private float combatMix, nextBattleCheck, previousTimeScale;
-    private bool inputWasActive, aimWasEnabled, cursorWasVisible;
-    private CursorLockMode cursorWasLocked;
-    private GUIStyle menuTitle, menuText, menuButton;
-    private Unity.Cinemachine.CinemachineInputAxisController[] cameraInputs;
-    private bool[] cameraInputStates;
+    private float combatMix, nextBattleCheck;
     private int warningTier;
     private float nextWarning, nextHurt;
 
@@ -62,41 +59,27 @@ public sealed class GameAudio : MonoBehaviour
         musicVolume = Mathf.Clamp01(PlayerPrefs.GetFloat("Khusle.Audio.Music", musicVolume));
         effectsVolume = Mathf.Clamp01(PlayerPrefs.GetFloat("Khusle.Audio.Effects", effectsVolume));
         muted = PlayerPrefs.GetInt("Khusle.Audio.Muted", 0) != 0;
-        playerShots = LoadVariants("laserLarge", 3);
-        enemyShots = LoadVariants("laserSmall", 3);
-        impacts = LoadVariants("impactMetal", 3);
-        ignition = Load("thrusterFire_000");
-        jetLoop = Load("spaceEngineSmall_000");
-        field = Load("forceField_000");
-        pickup = Load("forceField_001");
-        latch = Load("doorClose_000");
-        boom = Load("lowFrequency_explosion_000");
-        rocketLoop = Load("launch_roar", "Rocket", ".wav");
-        dustSteps = LoadVariants("footstep_snow", 3, "Foley");
-        hardSteps = LoadVariants("footstep_concrete", 3, "Foley");
-        punches = LoadVariants("impactPunch_medium", 3, "Foley");
-        victory = Load("escape_success", "Original", ".wav");
-        defeat = Load("mission_failed", "Original", ".wav");
-        swing = Load("melee_swing", "Original", ".wav");
+        keys.Add("escape", () => { if (HasActivePlayer) SetPaused(!paused); });
+        keys.Add("m", () => { muted = !muted; settingsDirty = true; });
+        sounds = new GameSounds();
         for (int i = 0; i < VoiceCount; i++) voices[i] = CreateSource("Effect " + i, 128);
         jetSource = CreateSource("Jetpack Loop", 64);
         jetSource.loop = true;
         jetSource.volume = 0f;
-        jetSource.clip = jetLoop;
+        jetSource.clip = sounds.jetLoop;
         warningSource = CreateSource("Oxygen Warning", 16);
-        warning = CreateWarning();
-        warningSource.clip = warning;
+        warningSource.clip = sounds.warning;
         rocketSource = CreateSource("Rocket Engine", 32);
         rocketSource.loop = true;
         rocketSource.volume = 0f;
-        rocketSource.clip = rocketLoop;
+        rocketSource.clip = sounds.rocketLoop;
         musicSource = CreateLoop("Space Music", "Music/DeadShip", 200);
         windSource = CreateLoop("Desert Wind", "Original/desert_wind", 220);
         combatSource = CreateLoop("Battle Music", "Original/combat_music", 180);
         sprintSource = CreateSource("Sprint Ground Scrape", 80);
         sprintSource.loop = true;
         sprintSource.volume = 0f;
-        sprintSource.clip = Load("sprint_scrape", "Original", ".wav");
+        sprintSource.clip = sounds.sprintScrape;
     }
 
     private AudioSource CreateLoop(string name, string resource, int priority)
@@ -123,20 +106,6 @@ public sealed class GameAudio : MonoBehaviour
         source.maxDistance = 80f;
         source.rolloffMode = AudioRolloffMode.Linear;
         return source;
-    }
-
-    private static AudioClip Load(string name, string folder = "SciFi", string extension = ".ogg")
-    {
-        AudioClip clip = Resources.Load<AudioClip>("Audio/" + folder + "/" + name);
-        if (clip == null) Debug.LogWarning("GameAudio: missing Audio/" + folder + "/" + name + extension);
-        return clip;
-    }
-
-    private static AudioClip[] LoadVariants(string prefix, int count, string folder = "SciFi")
-    {
-        var clips = new AudioClip[count];
-        for (int i = 0; i < count; i++) clips[i] = Load(prefix + "_" + i.ToString("000"), folder);
-        return clips;
     }
 
     private static AudioClip Pick(AudioClip[] clips) { return clips[variation.Next(clips.Length)]; }
@@ -189,7 +158,7 @@ public sealed class GameAudio : MonoBehaviour
     {
         GameAudio audio = Current;
         if (audio.rocketActive || audio.gameFinished || audio.paused) return;
-        audio.Play(Pick(playerShot ? audio.playerShots : audio.enemyShots), position,
+        audio.Play(Pick(playerShot ? audio.sounds.playerShots : audio.sounds.enemyShots), position,
             playerShot ? 0.7f : 0.35f, playerShot ? 0f : 1f, playerShot ? 60 : 150,
             0f, VaryPitch(0.96f, 1.04f));
     }
@@ -198,7 +167,7 @@ public sealed class GameAudio : MonoBehaviour
     {
         GameAudio audio = Current;
         if (!audio.rocketActive && !audio.gameFinished && !audio.paused)
-            audio.Play(Pick(audio.impacts), position, 0.35f, 1f, 170, 0f, VaryPitch(0.94f, 1.06f));
+            audio.Play(Pick(audio.sounds.impacts), position, 0.35f, 1f, 170, 0f, VaryPitch(0.94f, 1.06f));
     }
 
     public static void PlayerHurt()
@@ -206,7 +175,7 @@ public sealed class GameAudio : MonoBehaviour
         GameAudio audio = Current;
         if (Time.unscaledTime < audio.nextHurt || audio.rocketActive || audio.gameFinished) return;
         audio.nextHurt = Time.unscaledTime + 0.18f;
-        audio.Play(Pick(audio.punches), Vector3.zero, 0.6f, 0f, 40, 0f, 0.9f);
+        audio.Play(Pick(audio.sounds.punches), Vector3.zero, 0.6f, 0f, 40, 0f, 0.9f);
     }
 
     public static void PlayerDied()
@@ -220,8 +189,8 @@ public sealed class GameAudio : MonoBehaviour
         audio.sprintSource.volume = 0f;
         audio.warningSource.Stop();
         audio.wasJetting = false;
-        audio.Play(audio.boom, Vector3.zero, 0.2f, 0f, 30, 0.5f);
-        audio.Play(audio.defeat, Vector3.zero, 0.7f, 0f, 20);
+        audio.Play(audio.sounds.boom, Vector3.zero, 0.2f, 0f, 30, 0.5f);
+        audio.Play(audio.sounds.defeat, Vector3.zero, 0.7f, 0f, 20);
     }
 
     public static void Footstep(Vector3 position, bool isPlayer, bool hardSurface)
@@ -231,7 +200,7 @@ public sealed class GameAudio : MonoBehaviour
         if (isPlayer && audio.sprint != null && audio.sprint.IsSprinting) return;
         Camera camera = StatusBarUI.FindGameCamera();
         if (!isPlayer && camera != null && (camera.transform.position - position).sqrMagnitude > 18f * 18f) return;
-        audio.Play(Pick(hardSurface ? audio.hardSteps : audio.dustSteps), position,
+        audio.Play(Pick(hardSurface ? audio.sounds.hardSteps : audio.sounds.dustSteps), position,
             isPlayer ? 0.23f : 0.14f, isPlayer ? 0f : 1f, isPlayer ? 110 : 210,
             0f, VaryPitch(0.92f, 1.08f), 18f);
     }
@@ -240,29 +209,29 @@ public sealed class GameAudio : MonoBehaviour
     {
         GameAudio audio = Current;
         if (!audio.gameFinished && !audio.rocketActive)
-            audio.Play(Pick(audio.hardSteps), position, 0.45f, 0f, 100, 0f, 0.8f);
+            audio.Play(Pick(audio.sounds.hardSteps), position, 0.45f, 0f, 100, 0f, 0.8f);
     }
 
     public static void MeleeSwing(Vector3 position)
     {
         GameAudio audio = Current;
         if (!audio.gameFinished && !audio.rocketActive && !audio.paused)
-            audio.Play(audio.swing, position, 0.48f, 1f, 120, 0f, VaryPitch(0.95f, 1.05f), 30f);
+            audio.Play(audio.sounds.swing, position, 0.48f, 1f, 120, 0f, VaryPitch(0.95f, 1.05f), 30f);
     }
 
     public static void EnemyDied(Vector3 position)
     {
         GameAudio audio = Current;
         if (audio.gameFinished || audio.rocketActive) return;
-        audio.Play(audio.boom, position, 0.34f, 1f, 100, 0.85f, VaryPitch(0.9f, 1.1f), 55f);
+        audio.Play(audio.sounds.boom, position, 0.34f, 1f, 100, 0.85f, VaryPitch(0.9f, 1.1f), 55f);
         audio.RefreshBattleState();
     }
 
     public static void CollectOxygen(bool upgrade = false)
     {
         GameAudio audio = Current;
-        audio.Play(audio.pickup, Vector3.zero, 0.55f, 0f, 35, 0f, upgrade ? 1.2f : 1f);
-        audio.Play(audio.latch, Vector3.zero, 0.2f, 0f, 80, 0.25f);
+        audio.Play(audio.sounds.pickup, Vector3.zero, 0.55f, 0f, 35, 0f, upgrade ? 1.2f : 1f);
+        audio.Play(audio.sounds.latch, Vector3.zero, 0.2f, 0f, 80, 0.25f);
         if (audio.oxygen != null && audio.oxygen.CurrentOxygen / Mathf.Max(1f, audio.oxygen.Capacity) > 0.25f)
             audio.warningSource.Stop();
     }
@@ -295,14 +264,14 @@ public sealed class GameAudio : MonoBehaviour
     public static void GeneratorActivated(Vector3 position)
     {
         GameAudio audio = Current;
-        audio.Play(audio.latch, position, 0.3f, 0.5f, 70, 0.3f);
-        audio.Play(audio.field, position, 0.65f, 0.5f, 50);
+        audio.Play(audio.sounds.latch, position, 0.3f, 0.5f, 70, 0.3f);
+        audio.Play(audio.sounds.field, position, 0.65f, 0.5f, 50);
     }
 
     public static void RocketReady()
     {
         GameAudio audio = Current;
-        audio.Play(audio.pickup, Vector3.zero, 0.7f, 0f, 30, 0f, 1.25f);
+        audio.Play(audio.sounds.pickup, Vector3.zero, 0.7f, 0f, 30, 0f, 1.25f);
     }
 
     public static void BeginLaunch()
@@ -318,7 +287,7 @@ public sealed class GameAudio : MonoBehaviour
         audio.gameFinished = false;
         audio.rocketSource.volume = 0f;
         if (audio.rocketSource.clip != null) audio.rocketSource.Play();
-        audio.Play(audio.latch, Vector3.zero, 0.35f, 0f, 30);
+        audio.Play(audio.sounds.latch, Vector3.zero, 0.35f, 0f, 30);
     }
 
     public static void CompleteLaunch()
@@ -326,131 +295,101 @@ public sealed class GameAudio : MonoBehaviour
         GameAudio audio = Current;
         audio.rocketActive = false;
         audio.gameFinished = true;
-        audio.Play(audio.victory, Vector3.zero, 0.7f, 0f, 20);
+        audio.Play(audio.sounds.victory, Vector3.zero, 0.7f, 0f, 20);
     }
 
     private void LateUpdate()
     {
-        if (Keyboard.current != null)
-        {
-            if (Keyboard.current.mKey.wasPressedThisFrame)
-            { muted = !muted; settingsDirty = true; }
-            if (Keyboard.current.escapeKey.wasPressedThisFrame && !gameFinished && !rocketActive
-                && player != null && !player.IsDead && player.gameObject.activeInHierarchy)
-                SetPaused(!paused);
-        }
+        UpdateEffects();
+        bool gameplay = player != null && player.isActiveAndEnabled && !player.IsDead
+            && !rocketActive && !gameFinished && !paused && Time.timeScale > 0f;
+        FadeLoop(rocketSource, rocketActive ? effectsVolume * 0.9f : 0f);
+        UpdateMovementAudio(gameplay);
+        UpdateMusic(gameplay);
+        UpdateOxygenWarning(gameplay);
+    }
+
+    private void UpdateEffects()
+    {
         double now = AudioSettings.dspTime;
         for (int i = 0; i < VoiceCount; i++)
         {
-            voices[i].mute = muted;
-            if (!voices[i].isPlaying) continue;
-            // Stop the last boot's tail as soon as the player starts sliding.
-            if (sprint != null && sprint.IsSprinting && voices[i].spatialBlend == 0f
-                && voices[i].clip != null && voices[i].clip.name.StartsWith("footstep_"))
-            { voices[i].Stop(); continue; }
+            AudioSource source = voices[i]; source.mute = muted;
+            if (!source.isPlaying) continue;
+            if (sprint != null && sprint.IsSprinting && source.spatialBlend == 0f
+                && source.clip != null && source.clip.name.StartsWith("footstep_"))
+            { source.Stop(); continue; }
             double remaining = voiceEnds[i] - now;
-            if (remaining <= 0d) voices[i].Stop();
-            else voices[i].volume = voiceLevels[i] * effectsVolume * Mathf.Clamp01((float)remaining / 0.025f);
+            if (remaining <= 0d) source.Stop();
+            else source.volume = voiceLevels[i] * effectsVolume * Mathf.Clamp01((float)remaining / 0.025f);
         }
+    }
 
-        float fade = Time.unscaledDeltaTime * 3f;
-        rocketSource.volume = Mathf.MoveTowards(rocketSource.volume,
-            rocketActive ? effectsVolume * 0.9f : 0f, fade);
-        if (!rocketActive && rocketSource.volume <= 0f) rocketSource.Stop();
-        rocketSource.mute = muted;
-
-        bool alive = player != null && player.isActiveAndEnabled && !player.IsDead;
-        bool gameplay = alive && !rocketActive && !gameFinished && !paused && Time.timeScale > 0f;
-        bool groundedSprint = gameplay && sprint != null && sprint.IsSprinting
-            && playerBody != null && playerBody.enabled && playerBody.isGrounded
-            && (jetpack == null || !jetpack.IsJetting);
-        bool jetting = gameplay && ((jetpack != null && jetpack.IsJetting)
-            || (sprint != null && sprint.IsSprinting)) && oxygen != null && oxygen.HasOxygen;
-        jetSource.pitch = sprint != null && sprint.IsSprinting ? 1.12f : 1f;
-        if (jetting && !wasJetting)
-        {
-            Play(ignition, Vector3.zero, 0.32f, 0f, 65, 0.22f);
-            if (jetSource.clip != null && !jetSource.isPlaying) jetSource.Play();
-        }
-        jetSource.volume = Mathf.MoveTowards(jetSource.volume,
-            jetting ? effectsVolume * (groundedSprint ? 0.18f : 0.32f) : 0f, fade);
-        if (!jetting && jetSource.volume <= 0f) jetSource.Stop();
+    private void UpdateMovementAudio(bool gameplay)
+    {
+        bool sprinting = sprint != null && sprint.IsSprinting;
+        bool flying = jetpack != null && jetpack.IsJetting;
+        bool groundedSprint = gameplay && sprinting && !flying && playerBody != null
+            && playerBody.enabled && playerBody.isGrounded;
+        bool jetting = gameplay && (flying || sprinting) && oxygen != null && oxygen.HasOxygen;
+        jetSource.pitch = sprinting ? 1.12f : 1f;
+        if (jetting && !wasJetting) Play(sounds.ignition, Vector3.zero, 0.32f, 0f, 65, 0.22f);
+        FadeLoop(jetSource, jetting ? effectsVolume * (groundedSprint ? 0.18f : 0.32f) : 0f);
         wasJetting = jetting;
-        jetSource.mute = muted;
+        Vector3 velocity = playerBody != null && playerBody.enabled ? playerBody.velocity : Vector3.zero;
+        velocity.y = 0f; float speed = velocity.magnitude;
+        bool scraping = groundedSprint && speed > 0.3f;
+        sprintSource.pitch = Mathf.Clamp(speed / 8f, 0.85f, 1.2f);
+        FadeLoop(sprintSource, scraping ? effectsVolume * 0.6f * Mathf.Clamp01(speed / 6f) : 0f);
+    }
 
-        Vector3 groundVelocity = playerBody != null && playerBody.enabled ? playerBody.velocity : Vector3.zero;
-        groundVelocity.y = 0f;
-        float groundSpeed = groundVelocity.magnitude;
-        bool scraping = groundedSprint && groundSpeed > 0.3f;
-        float scrapeTarget = scraping ? effectsVolume * 0.6f * Mathf.Clamp01(groundSpeed / 6f) : 0f;
-        sprintSource.pitch = Mathf.Clamp(groundSpeed / 8f, 0.85f, 1.2f);
-        if (scraping && !sprintSource.isPlaying && sprintSource.clip != null) sprintSource.Play();
-        sprintSource.volume = Mathf.MoveTowards(sprintSource.volume, scrapeTarget, fade);
-        if (!scraping && sprintSource.volume <= 0f) sprintSource.Stop();
-        sprintSource.mute = muted;
-
+    private void UpdateMusic(bool gameplay)
+    {
         if (gameplay && Time.unscaledTime >= nextBattleCheck) RefreshBattleState();
-        float battleTarget = (gameplay || paused) && battleActive ? 1f : 0f;
-        combatMix = Mathf.MoveTowards(combatMix, battleTarget, Time.unscaledDeltaTime * 0.7f);
-        float musicLevel = gameFinished ? 0f : Mathf.Clamp01(musicVolume * MusicTrackGain)
+        float target = (gameplay || paused) && battleActive ? 1f : 0f;
+        combatMix = Mathf.MoveTowards(combatMix, target, Time.unscaledDeltaTime * 0.7f);
+        float level = gameFinished ? 0f : Mathf.Clamp01(musicVolume * MusicTrackGain)
             * (rocketActive ? 0.35f : paused ? 0.45f : 1f);
-        float musicTarget = musicLevel * (1f - combatMix);
-        if (musicTarget > 0f && !musicSource.isPlaying && musicSource.clip != null) musicSource.Play();
-        float musicFade = rocketActive || battleActive || combatMix > 0f ? 0.6f : 0.15f;
-        musicSource.volume = Mathf.MoveTowards(musicSource.volume, musicTarget, Time.unscaledDeltaTime * musicFade);
-        windSource.volume = Mathf.MoveTowards(windSource.volume, gameplay ? musicVolume * ambienceVolume : 0f, fade * 0.1f);
-        combatSource.volume = Mathf.MoveTowards(combatSource.volume, !rocketActive ? musicLevel * 0.95f * combatMix : 0f, fade * 0.2f);
-        musicSource.mute = windSource.mute = combatSource.mute = muted;
+        float fade = rocketActive || battleActive || combatMix > 0f ? 0.6f : 0.15f;
+        FadeLoop(musicSource, level * (1f - combatMix), fade, false);
+        FadeLoop(windSource, gameplay ? musicVolume * ambienceVolume : 0f, 0.3f, false);
+        FadeLoop(combatSource, !rocketActive ? level * 0.95f * combatMix : 0f, 0.6f, false);
+    }
 
+    private void UpdateOxygenWarning(bool gameplay)
+    {
+        warningSource.volume = warningVolume * effectsVolume; warningSource.mute = muted;
         float ratio = oxygen != null ? oxygen.CurrentOxygen / Mathf.Max(1f, oxygen.Capacity) : 1f;
         int tier = !gameplay || ratio > 0.25f ? 0 : ratio <= 0.1f ? 2 : 1;
         if (tier == 0) warningSource.Stop();
         else if (tier != warningTier || Time.unscaledTime >= nextWarning)
         {
             warningSource.pitch = tier == 2 ? 1.15f : 1f;
-            warningSource.volume = warningVolume * effectsVolume;
-            warningSource.Play();
-            nextWarning = Time.unscaledTime + (tier == 2 ? 1.2f : 3f);
+            warningSource.Play(); nextWarning = Time.unscaledTime + (tier == 2 ? 1.2f : 3f);
         }
         warningTier = tier;
-        warningSource.volume = warningVolume * effectsVolume;
-        warningSource.mute = muted;
     }
 
-    private void SetPaused(bool value)
+    // All loops use unscaled fades, including the frozen-world rocket sequence.
+    private void FadeLoop(AudioSource source, float target, float rate = 3f, bool stopWhenSilent = true)
+    {
+        if (target > 0f && !source.isPlaying && source.clip != null) source.Play();
+        source.volume = Mathf.MoveTowards(source.volume, target, Time.unscaledDeltaTime * rate);
+        source.mute = muted;
+        if (stopWhenSilent && target <= 0f && source.volume <= 0f) source.Stop();
+    }
+
+    public void SetPaused(bool value)
     {
         if (paused == value) return;
         paused = value;
-        var input = player != null ? player.GetComponent<PlayerInput>() : null;
-        var aim = player != null ? player.GetComponent<TPSAim>() : null;
         if (paused)
         {
-            previousTimeScale = Time.timeScale;
-            cursorWasLocked = Cursor.lockState; cursorWasVisible = Cursor.visible;
-            inputWasActive = input != null && input.inputIsActive;
-            aimWasEnabled = aim != null && aim.enabled;
-            cameraInputs = Object.FindObjectsByType<Unity.Cinemachine.CinemachineInputAxisController>();
-            cameraInputStates = new bool[cameraInputs.Length];
-            for (int i = 0; i < cameraInputs.Length; i++)
-            { cameraInputStates[i] = cameraInputs[i].enabled; cameraInputs[i].enabled = false; }
-            input?.DeactivateInput();
-            if (aim != null) aim.enabled = false;
+            pauseState.Pause(player);
             sprint?.StopSprinting(); jetpack?.StopJetting();
             foreach (AudioSource source in voices) source.Stop();
-            Time.timeScale = 0f;
-            Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
         }
-        else
-        {
-            Time.timeScale = previousTimeScale;
-            if (inputWasActive && input != null && player != null && !player.IsDead) input.ActivateInput();
-            if (aim != null && player != null && !player.IsDead) aim.enabled = aimWasEnabled;
-            if (cameraInputs != null)
-                for (int i = 0; i < cameraInputs.Length; i++)
-                    if (cameraInputs[i] != null) cameraInputs[i].enabled = cameraInputStates[i];
-            Cursor.lockState = cursorWasLocked; Cursor.visible = cursorWasVisible;
-            SaveSettings();
-        }
+        else { pauseState.Resume(); SaveSettings(); }
     }
 
     private void SaveSettings()
@@ -462,72 +401,16 @@ public sealed class GameAudio : MonoBehaviour
         PlayerPrefs.Save(); settingsDirty = false;
     }
 
-    private void OnGUI()
+    public void SetAudioSettings(float music, float effects, bool mute)
     {
-        if (gameFinished || rocketActive || player == null || player.IsDead) return;
-        if (menuTitle == null)
-        {
-            menuTitle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = 28 };
-            menuText = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft, fontSize = 18 };
-            menuButton = new GUIStyle(GUI.skin.button) { fontSize = 18 };
-        }
-        if (!paused)
-        {
-            GUI.Label(new Rect(12f, Screen.height - 28f, 240f, 25f), muted ? "ESC  SETTINGS    M  UNMUTE" : "ESC  SETTINGS    M  MUTE");
-            return;
-        }
-        Matrix4x4 matrix = GUI.matrix; Color color = GUI.color; int depth = GUI.depth;
-        GUI.depth = -2500;
-        float scale = Mathf.Max(0.65f, Mathf.Min(Screen.width / 1280f, Screen.height / 720f));
-        float width = Mathf.Min(480f, (Screen.width - 24f) / scale);
-        float top = Screen.height / scale * 0.5f - 170f;
-        GUI.matrix = Matrix4x4.TRS(new Vector3(Screen.width * 0.5f, 0f), Quaternion.identity, Vector3.one * scale);
-        GUI.color = new Color(0.025f, 0.04f, 0.065f, 0.96f);
-        GUI.DrawTexture(new Rect(-width * 0.5f, top, width, 340f), Texture2D.whiteTexture);
-        GUI.color = new Color(0.2f, 0.85f, 1f);
-        GUI.Label(new Rect(-width * 0.5f, top + 16f, width, 45f), "PAUSED", menuTitle);
-        GUI.color = Color.white;
-        float inner = width - 36f;
-        GUI.Label(new Rect(-inner * 0.5f, top + 76f, inner, 30f), "MUSIC  " + Mathf.RoundToInt(musicVolume * 100f) + "%", menuText);
-        float music = GUI.HorizontalSlider(new Rect(-inner * 0.5f, top + 112f, inner, 24f), musicVolume, 0f, 1f);
-        GUI.Label(new Rect(-inner * 0.5f, top + 151f, inner, 30f), "SOUND EFFECTS  " + Mathf.RoundToInt(effectsVolume * 100f) + "%", menuText);
-        float effects = GUI.HorizontalSlider(new Rect(-inner * 0.5f, top + 187f, inner, 24f), effectsVolume, 0f, 1f);
-        if (music != musicVolume || effects != effectsVolume) settingsDirty = true;
-        musicVolume = music; effectsVolume = effects;
-        if (GUI.Button(new Rect(-inner * 0.5f, top + 228f, inner, 38f), muted ? "UNMUTE  (M)" : "MUTE ALL  (M)", menuButton))
-        { muted = !muted; settingsDirty = true; }
-        bool resume = GUI.Button(new Rect(-inner * 0.5f, top + 280f, inner, 38f), "RESUME  (ESC)", menuButton);
-        GUI.matrix = matrix; GUI.color = color; GUI.depth = depth;
-        if (resume) SetPaused(false);
-    }
-
-    // This pack has no warning beep; synthesize an original two-pulse suit alarm.
-    private static AudioClip CreateWarning()
-    {
-        const int rate = 44100;
-        var samples = new float[(int)(rate * 0.38f)];
-        for (int i = 0; i < samples.Length; i++)
-        {
-            float time = i / (float)rate;
-            float pulse = time < 0.14f ? time : time >= 0.23f ? time - 0.23f : -1f;
-            if (pulse < 0f || pulse >= 0.14f) continue;
-            float envelope = Mathf.Clamp01(pulse / 0.01f) * Mathf.Clamp01((0.14f - pulse) / 0.025f);
-            samples[i] = Mathf.Sin(2f * Mathf.PI * 880f * time) * envelope * 0.3f;
-        }
-        AudioClip clip = AudioClip.Create("Suit Oxygen Warning", samples.Length, 1, rate, false);
-        clip.SetData(samples, 0);
-        return clip;
+        musicVolume = Mathf.Clamp01(music); effectsVolume = Mathf.Clamp01(effects); muted = mute;
+        settingsDirty = true; SaveSettings();
     }
 
     private void OnDestroy()
     {
-        if (paused)
-        {
-            Time.timeScale = previousTimeScale;
-            Cursor.lockState = cursorWasLocked; Cursor.visible = cursorWasVisible;
-        }
-        SaveSettings();
-        if (warning != null) Destroy(warning);
+        if (paused) pauseState.Resume();
+        keys.Dispose(); SaveSettings(); sounds?.Dispose();
         if (instance == this) instance = null;
     }
 }

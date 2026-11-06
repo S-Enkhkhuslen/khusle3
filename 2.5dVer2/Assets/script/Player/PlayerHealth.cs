@@ -32,7 +32,6 @@ public class PlayerHealth : MonoBehaviour
         currentHealth = Mathf.Max(0f, currentHealth - damage);
         effects?.FlashDamage();
         GameAudio.PlayerHurt();
-        Debug.Log("Player Health: " + currentHealth);
         if (currentHealth <= 0f)
             Die();
         else if (playerAnimation != null)
@@ -47,7 +46,6 @@ public class PlayerHealth : MonoBehaviour
         IsDead = true;
         GameScore.FinishRun(false);
         GameAudio.PlayerDied();
-        Debug.Log("PLAYER DEAD");
         GetComponent<PlayerInput>()?.DeactivateInput();
         GetComponent<Sprint>()?.StopSprinting();
         GetComponent<Jetpack>()?.StopJetting();

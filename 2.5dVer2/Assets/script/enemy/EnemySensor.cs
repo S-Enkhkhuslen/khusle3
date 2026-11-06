@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemySensor : MonoBehaviour
 {
@@ -13,14 +14,17 @@ public class EnemySensor : MonoBehaviour
     [SerializeField] private float loseSightDelay = 1f;
 
     public bool PlayerDetected { get; private set; }
+    public bool CanSeePlayer { get; private set; }
     public Transform PlayerTransform { get; private set; }
     private float lastSeenTime = float.NegativeInfinity;
     private PlayerHealth playerHealth;
     private Enemy enemy;
+    private NavMeshAgent groundAgent;
 
     private void Start()
     {
         enemy = GetComponent<Enemy>();
+        groundAgent = GetComponent<NavMeshAgent>();
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player == null) return;
         PlayerTransform = player.transform;
@@ -35,6 +39,8 @@ public class EnemySensor : MonoBehaviour
             || (enemy != null && enemy.IsDead))
         {
             PlayerDetected = false;
+            CanSeePlayer = false;
+            lastSeenTime = float.NegativeInfinity;
             return;
         }
 
@@ -49,13 +55,17 @@ public class EnemySensor : MonoBehaviour
             ? Vector3.Angle(horizontalForward, horizontalDirection) : 0f;
 
         // Өнцгийг хэвтээгээр, зай болон харагдах эсэхийг бүтэн 3D-ээр шалгана.
-        if (distance <= viewDistance && angle <= viewAngle * 0.5f
+        CanSeePlayer = distance <= viewDistance && angle <= viewAngle * 0.5f
             && Physics.Raycast(sensorPoint.position, direction.normalized, out RaycastHit hit,
                 distance + 0.5f, sensorMask, QueryTriggerInteraction.Ignore)
-            && (hit.transform == PlayerTransform || hit.transform.IsChildOf(PlayerTransform)))
-            lastSeenTime = Time.time;
+            && (hit.transform == PlayerTransform || hit.transform.IsChildOf(PlayerTransform));
+        if (CanSeePlayer) lastSeenTime = Time.time;
 
-        PlayerDetected = Time.time - lastSeenTime <= loseSightDelay;
+        // Once spotted, a ground enemy follows downhill even if a ridge hides the player.
+        // Initial detection still needs sight; pursuit ends outside the sensor range.
+        bool followDownhill = PlayerDetected && groundAgent != null && groundAgent.isActiveAndEnabled
+            && distance <= viewDistance && PlayerTransform.position.y < transform.position.y - 1f;
+        PlayerDetected = Time.time - lastSeenTime <= loseSightDelay || followDownhill;
     }
 
     private void OnDrawGizmosSelected()

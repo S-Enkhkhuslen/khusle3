@@ -19,7 +19,6 @@ public class EscapeRocket : MonoBehaviour
     private Vector3 launchPosition;
     private Camera launchCamera;
     private ParticleSystem exhaust;
-    private GUIStyle textStyle;
     private CursorLockMode previousCursorLock;
     private bool previousCursorVisible;
 
@@ -46,12 +45,7 @@ public class EscapeRocket : MonoBehaviour
 
     private void Update()
     {
-        if (completed)
-        {
-            if (GameEndScreen.HandleInput())
-                Restart();
-            return;
-        }
+        if (completed) return;
         if (launching)
         {
             launchTime += Time.unscaledDeltaTime;
@@ -67,6 +61,8 @@ public class EscapeRocket : MonoBehaviour
                 completed = true;
                 GameScore.FinishRun(true, finalOxygen);
                 GameAudio.CompleteLaunch();
+                GameInterface.Current.Rocket.Hide();
+                GameEndScreen.Show("YOU ESCAPED!", "Mission complete. You left the planet.", GameUI.Cyan, previousTimeScale);
                 exhaust.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             }
             return;
@@ -118,46 +114,11 @@ public class EscapeRocket : MonoBehaviour
         exhaust = GetComponent<RocketVisual>().StartExhaust();
     }
 
-    private void Restart()
+    private void LateUpdate()
     {
-        GameEndScreen.Restart(previousTimeScale);
-    }
-
-    private void OnGUI()
-    {
-        if (completed)
-        {
-            if (GameEndScreen.Draw("YOU ESCAPED!", "Mission complete. You left the planet.",
-                GameScore.TotalScore, new Color(0.2f, 0.85f, 1f))) Restart();
-            return;
-        }
-        if (textStyle == null)
-            textStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter,
-                fontStyle = FontStyle.Bold, fontSize = 20, wordWrap = true };
-        Matrix4x4 previousMatrix = GUI.matrix;
-        Color previousColor = GUI.color;
-        int previousDepth = GUI.depth;
-        GUI.depth = -2000;
-        float scale = Mathf.Max(0.01f, Mathf.Min(Screen.width / 1280f, Screen.height / 720f));
-        GUI.matrix = Matrix4x4.TRS(new Vector3(Screen.width * 0.5f, 0f), Quaternion.identity,
-            new Vector3(scale, scale, 1f));
-        DrawBackground(new Rect(-280f, 24f, 560f, 72f), 0.9f);
-        GUI.color = new Color(0.2f, 0.85f, 1f);
-        GUI.Label(new Rect(-275f, 26f, 550f, 30f), launching ? "LAUNCHING..." : "ESCAPE ROCKET READY", textStyle);
-        GUI.color = Color.white;
-        string hint = launching ? "Leaving the planet..."
-            : IsInBoardingRange() ? "[E] LAUNCH"
-            : "Approach the rocket  -  " + (player != null ? Mathf.CeilToInt(HorizontalDistance()) + " m" : "");
-        GUI.Label(new Rect(-275f, 58f, 550f, 32f), hint, textStyle);
-        GUI.matrix = previousMatrix;
-        GUI.color = previousColor;
-        GUI.depth = previousDepth;
-    }
-
-    private static void DrawBackground(Rect rect, float alpha)
-    {
-        GUI.color = new Color(0.025f, 0.04f, 0.065f, alpha);
-        GUI.DrawTexture(rect, Texture2D.whiteTexture);
+        if (completed) return;
+        GameInterface.Current.Rocket.Refresh(IsInBoardingRange(), launching,
+            launchTime / launchDuration, player != null ? HorizontalDistance() : 0f);
     }
 
     private void OnDestroy()

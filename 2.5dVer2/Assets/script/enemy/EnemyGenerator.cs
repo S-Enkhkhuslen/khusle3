@@ -34,18 +34,14 @@ public class EnemyGenerator : MonoBehaviour
     private Vector3 interactionPosition;
     private bool isPlayerInRange;
     private float nextGroundRefresh;
-    private Vector3 markerCenter;
-    private float markerRadius = -1f;
-    private LineRenderer rangeMarker;
-    private Material markerMaterial;
-    private GUIStyle labelStyle;
-    private Camera promptCamera;
+    private GeneratorDisplay display;
     private bool used;
 
     private void Start()
     {
         RefreshGroundPosition();
-        CreateRangeMarker();
+        display = new GeneratorDisplay(transform);
+        UpdateRangeMarker();
     }
 
     private void Update()
@@ -56,6 +52,7 @@ public class EnemyGenerator : MonoBehaviour
         FindPlayer();
         UpdateInteractionState();
         UpdateRangeMarker();
+        display?.UpdatePrompt(interactionPosition, isPlayerInRange);
 
         if (isPlayerInRange && Time.timeScale > 0f && Keyboard.current != null
             && Keyboard.current.eKey.wasPressedThisFrame)
@@ -98,41 +95,7 @@ public class EnemyGenerator : MonoBehaviour
 
     private Vector3 GroundPosition(Vector3 position)
     {
-        foreach (Terrain terrain in Terrain.activeTerrains)
-        {
-            if (terrain.terrainData == null)
-                continue;
-
-            Vector3 origin = terrain.transform.position;
-            Vector3 size = terrain.terrainData.size;
-            if (position.x >= origin.x && position.x <= origin.x + size.x
-                && position.z >= origin.z && position.z <= origin.z + size.z)
-            {
-                position.y = origin.y + terrain.SampleHeight(position);
-                return position;
-            }
-        }
-
-        if (Physics.Raycast(position + Vector3.up * 100f, Vector3.down,
-            out RaycastHit hit, 200f, groundMask, QueryTriggerInteraction.Ignore))
-            return hit.point;
-
-        return position;
-    }
-
-    public GameObject SpawnMelee()
-    {
-        return SpawnEnemy(MeleePrefab, 0f, "Melee", null);
-    }
-
-    public GameObject SpawnRange()
-    {
-        return SpawnEnemy(RangePrefab, 0f, "Ranged", null);
-    }
-
-    public GameObject SpawnFlying()
-    {
-        return SpawnEnemy(FlyingPrefab, flyingSpawnHeight, "Flying", null);
+        return GroundUtility.Sample(position, groundMask);
     }
 
     public void SpawnEnemies()
@@ -262,114 +225,13 @@ public class EnemyGenerator : MonoBehaviour
         Debug.LogWarning("EnemyGenerator: " + message, this);
     }
 
-    private void CreateRangeMarker()
-    {
-        Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
-        if (shader == null) shader = Shader.Find("Unlit/Color");
-        if (shader == null) return;
-
-        GameObject marker = new GameObject("Generator Interaction Range");
-        marker.transform.SetParent(transform, false);
-        rangeMarker = marker.AddComponent<LineRenderer>();
-        rangeMarker.useWorldSpace = true;
-        rangeMarker.loop = true;
-        rangeMarker.positionCount = 64;
-        rangeMarker.widthMultiplier = 0.12f;
-        rangeMarker.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        rangeMarker.receiveShadows = false;
-        markerMaterial = new Material(shader);
-        rangeMarker.sharedMaterial = markerMaterial;
-        UpdateRangeMarker();
-    }
-
     private void UpdateRangeMarker()
     {
-        if (rangeMarker == null)
-            return;
-
-        float radius = Mathf.Max(0.1f, interactionRadius);
-        if (markerCenter != interactionPosition || markerRadius != radius)
-        {
-            for (int i = 0; i < rangeMarker.positionCount; i++)
-            {
-                float angle = i * Mathf.PI * 2f / rangeMarker.positionCount;
-                Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
-                rangeMarker.SetPosition(i, GroundPosition(interactionPosition + offset) + Vector3.up * 0.15f);
-            }
-            markerCenter = interactionPosition;
-            markerRadius = radius;
-        }
-
-        Color color = isPlayerInRange ? Color.green : Color.cyan;
-        if (markerMaterial.HasProperty("_BaseColor")) markerMaterial.SetColor("_BaseColor", color);
-        if (markerMaterial.HasProperty("_Color")) markerMaterial.SetColor("_Color", color);
+        display?.UpdateRange(interactionPosition, Mathf.Max(0.1f, interactionRadius), isPlayerInRange, groundMask);
     }
-
-    private Camera GetPromptCamera()
-    {
-        if (promptCamera != null && promptCamera.isActiveAndEnabled)
-            return promptCamera;
-
-        promptCamera = StatusBarUI.FindGameCamera();
-        return promptCamera;
-    }
-
-    private void OnGUI()
-    {
-        if (!isPlayerInRange)
-            return;
-
-        Camera view = GetPromptCamera();
-        if (view == null)
-            return;
-
-        // Keep the prompt next to the generator instead of at the screen center.
-        Vector3 anchor = interactionPosition + Vector3.up * 1.6f
-            + view.transform.right * 1.2f;
-        Vector3 screenPoint = view.WorldToScreenPoint(anchor);
-        if (screenPoint.z <= 0f || screenPoint.x < 0f || screenPoint.x > Screen.width
-            || screenPoint.y < 0f || screenPoint.y > Screen.height)
-            return;
-
-        if (labelStyle == null)
-            labelStyle = new GUIStyle(GUI.skin.label)
-            {
-                alignment = TextAnchor.MiddleCenter,
-                fontStyle = FontStyle.Bold,
-                wordWrap = false
-            };
-
-        float uiScale = Mathf.Max(0.75f, Screen.height / 900f);
-        labelStyle.fontSize = (int)(22f * uiScale);
-        float width = 240f * uiScale;
-        float height = 38f * uiScale;
-        Rect popup = new Rect(screenPoint.x - width * 0.5f,
-            Screen.height - screenPoint.y - height * 0.5f, width, height);
-        Color previousColor = GUI.color;
-        int previousDepth = GUI.depth;
-        GUI.depth = -1000;
-        GUI.color = new Color(0.02f, 0.025f, 0.035f, 0.8f);
-        GUI.DrawTexture(popup, Texture2D.whiteTexture);
-        GUI.color = Color.white;
-        GUI.Label(popup, "E Spawn enemies", labelStyle);
-        GUI.color = previousColor;
-        GUI.depth = previousDepth;
-    }
-
-    private void OnEnable()
-    {
-        if (rangeMarker != null) rangeMarker.enabled = true;
-    }
-
-    private void OnDisable()
-    {
-        if (rangeMarker != null) rangeMarker.enabled = false;
-    }
-
-    private void OnDestroy()
-    {
-        if (markerMaterial != null) Destroy(markerMaterial);
-    }
+    private void OnEnable() { display?.SetVisible(true); }
+    private void OnDisable() { display?.SetVisible(false); }
+    private void OnDestroy() { display?.Dispose(); }
 
     private void OnDrawGizmosSelected()
     {

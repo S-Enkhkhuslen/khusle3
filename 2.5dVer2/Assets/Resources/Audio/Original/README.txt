@@ -1,9 +1,7 @@
-Project audio source record — updated 2026-11-03.
+Project audio source record — updated 2026-11-05.
 
-Five original synthesized cues (no third-party samples):
-escape_success.wav, mission_failed.wav, desert_wind.wav, combat_pulse.wav,
-melee_swing.wav.
-The old combat_pulse.wav is retained as a legacy cue; combat now uses combat_music.wav.
+Four original synthesized cues (no third-party samples):
+escape_success.wav, mission_failed.wav, desert_wind.wav, melee_swing.wav.
 combat_music.wav: Fast fight / battle music by Ville Nousiainen, loop edit by XCVG.
 CC0; replaces the previous synthesized 112 BPM cue. Peak gain and 3 ms loop-edge
 de-click only; no speed/pitch edit.

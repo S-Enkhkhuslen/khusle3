@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.AI;
 public class MeleeEnemyAI : MonoBehaviour
 {
@@ -85,7 +85,9 @@ public class MeleeEnemyAI : MonoBehaviour
 
         FacePlayer(player);
         float distance = GetHorizontalDistance(player);
-        if (distance > attackDistance)
+        if (distance > attackDistance
+            || Mathf.Abs(player.position.y - transform.position.y) > meleeVerticalRange
+            || !sensor.CanSeePlayer)
         {
             ChasePlayer(player);
         }
@@ -102,32 +104,17 @@ public class MeleeEnemyAI : MonoBehaviour
 
     private void ChasePlayer(Transform player)
     {
-        if (agent == null || !agent.isOnNavMesh)
-            return;
-        Vector3 targetPosition = new Vector3( player.position.x, transform.position.y, player.position.z );
-        NavMeshHit hit;
-        if (NavMesh.SamplePosition( targetPosition, out hit, 5f, NavMesh.AllAreas))
-        {
-            agent.isStopped = false;
-            agent.SetDestination( hit.position );
-        }
+        EnemyNavigation.Chase(agent, player.position);
     }
 
     private void StopMoving()
     {
-        if (agent == null || !agent.isOnNavMesh)
-            return;
-        agent.isStopped = true;
+        EnemyNavigation.Stop(agent);
     }
 
     private void FacePlayer(Transform player)
     {
-        Vector3 direction = player.position - transform.position;
-        direction.y = 0f;
-        if (direction == Vector3.zero)
-            return;
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.Slerp( transform.rotation, targetRotation, rotateSpeed * Time.deltaTime );
+        EnemyNavigation.Face(transform, player, rotateSpeed);
     }
 
     private void AttackPlayer(Transform player)
@@ -151,25 +138,10 @@ public class MeleeEnemyAI : MonoBehaviour
 
     private void UpdateAttackDamage()
     {
-        if (!attackPending)
-            return;
-        if (Time.time < attackHitTime)
-            return;
+        if (!attackPending || Time.time < attackHitTime) return;
         attackPending = false;
-        if (attackTarget == null)
-            return;
-        if (!CombatPhysics.CanMeleeHit(transform, attackTarget, attackDistance, meleeVerticalRange))
-        {
-            attackTarget = null;
-            return;
-        }
-
-        PlayerHealth playerHealth = attackTarget.GetComponent<PlayerHealth>();
-        if (playerHealth != null)
-        {
-            playerHealth.TakeDamage( attackDamage );
-        }
-
+        if (CombatPhysics.CanMeleeHit(transform, attackTarget, attackDistance, meleeVerticalRange))
+            attackTarget.GetComponent<PlayerHealth>()?.TakeDamage(attackDamage);
         attackTarget = null;
     }
 
@@ -203,10 +175,8 @@ public class MeleeEnemyAI : MonoBehaviour
         enabled = false;
     }
 
-    private float GetHorizontalDistance( Transform player)
+    private float GetHorizontalDistance(Transform player)
     {
-        Vector3 difference = player.position - transform.position;
-        difference.y = 0f;
-        return difference.magnitude;
+        return EnemyNavigation.Distance(transform, player);
     }
 }

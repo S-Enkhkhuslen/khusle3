@@ -1,6 +1,6 @@
 # Game audio
 
-34 selected assets are included. No Inspector clip assignments are needed:
+32 selected assets are included. No Inspector clip assignments are needed:
 GameAudio is created when PlayerHealth wakes and loads these Resources.
 
 ## Controls
@@ -65,7 +65,7 @@ and stops its old loops.
   Edited real launch recording; NASA media usage guidelines apply. Credit and edits in Rocket/Source.txt.
 
 - **Kenney — Sci-fi Sounds:** https://kenney.nl/assets/sci-fi-sounds
-  16 unmodified OGG selections; CC0. Original license in SciFi/License.txt.
+  15 unmodified OGG selections; CC0. Original license in SciFi/License.txt.
 - **Kenney — Impact Sounds:** https://kenney.nl/assets/impact-sounds
   9 unmodified OGG selections; CC0. Original license in Foley/License.txt.
 - **yd — Background space track / My Very Own Dead Ship:**
@@ -74,7 +74,7 @@ and stops its old loops.
 - **Battle music — Ville Nousiainen, loop edit by XCVG:**
   https://opengameart.org/content/fast-fight-battle-music-looped
   CC0; source and license in Original/combat_music.License.txt.
-- **Project-generated cues:** five synthesized WAV files in Original. sprint_scrape.wav is an additional edited/granulated CC0
+- **Project-generated cues:** four synthesized WAV files in Original. sprint_scrape.wav is an additional edited/granulated CC0
   Kenney Impact Sounds derivative. The suit warning is synthesized by GameAudio.
   See Original/README.txt for provenance.
 

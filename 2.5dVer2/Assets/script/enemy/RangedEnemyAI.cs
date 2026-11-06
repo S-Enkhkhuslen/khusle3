@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.AI;
 public class RangedEnemyAI : MonoBehaviour
 {
@@ -119,7 +119,7 @@ public class RangedEnemyAI : MonoBehaviour
 
         if (isMeleeMode)
         {
-            if (distance > meleeAttackDistance)
+            if (distance > meleeAttackDistance || !sensor.CanSeePlayer)
             {
                 ChasePlayer(player);
             }
@@ -133,7 +133,7 @@ public class RangedEnemyAI : MonoBehaviour
             return;
         }
 
-        if (distance > shootMaxDistance)
+        if (distance > shootMaxDistance || !sensor.CanSeePlayer)
         {
             ChasePlayer(player);
         }
@@ -148,33 +148,17 @@ public class RangedEnemyAI : MonoBehaviour
 
     private void ChasePlayer(Transform player)
     {
-        if (agent == null || !agent.isOnNavMesh)
-            return;
-        Vector3 targetPosition = new Vector3( player.position.x, transform.position.y, player.position.z );
-        NavMeshHit hit;
-        if (NavMesh.SamplePosition( targetPosition, out hit, 5f, NavMesh.AllAreas))
-        {
-            agent.isStopped = false;
-            agent.SetDestination( hit.position );
-        }
+        EnemyNavigation.Chase(agent, player.position);
     }
 
     private void StopMoving()
     {
-        if (agent == null || !agent.isOnNavMesh)
-            return;
-        agent.isStopped = true;
+        EnemyNavigation.Stop(agent);
     }
 
     private void FacePlayer(Transform player)
     {
-        Vector3 direction = player.position
-            - transform.position;
-        direction.y = 0f;
-        if (direction == Vector3.zero)
-            return;
-        Quaternion targetRotation = Quaternion.LookRotation( direction );
-        transform.rotation = Quaternion.Slerp( transform.rotation, targetRotation, rotateSpeed * Time.deltaTime );
+        EnemyNavigation.Face(transform, player, rotateSpeed);
     }
 
     private void RangedAttack(Transform player)
@@ -223,25 +207,10 @@ public class RangedEnemyAI : MonoBehaviour
 
     private void UpdateMeleeDamage()
     {
-        if (!meleeAttackPending)
-            return;
-        if (Time.time < meleeHitTime)
-            return;
+        if (!meleeAttackPending || Time.time < meleeHitTime) return;
         meleeAttackPending = false;
-        if (meleeTarget == null)
-            return;
-        if (!CombatPhysics.CanMeleeHit(transform, meleeTarget, meleeAttackDistance, meleeVerticalRange))
-        {
-            meleeTarget = null;
-            return;
-        }
-
-        PlayerHealth playerHealth = meleeTarget.GetComponent<PlayerHealth>();
-        if (playerHealth != null)
-        {
-            playerHealth.TakeDamage( meleeDamage );
-        }
-
+        if (CombatPhysics.CanMeleeHit(transform, meleeTarget, meleeAttackDistance, meleeVerticalRange))
+            meleeTarget.GetComponent<PlayerHealth>()?.TakeDamage(meleeDamage);
         meleeTarget = null;
     }
 
@@ -271,11 +240,8 @@ public class RangedEnemyAI : MonoBehaviour
         animator.SetBool("IsMoving", isMoving);
     }
 
-    private float GetHorizontalDistance( Transform player)
+    private float GetHorizontalDistance(Transform player)
     {
-        Vector3 difference = player.position
-            - transform.position;
-        difference.y = 0f;
-        return difference.magnitude;
+        return EnemyNavigation.Distance(transform, player);
     }
 }
