@@ -87,7 +87,8 @@ public class MeleeEnemyAI : MonoBehaviour
         float distance = GetHorizontalDistance(player);
         if (distance > attackDistance
             || Mathf.Abs(player.position.y - transform.position.y) > meleeVerticalRange
-            || !sensor.CanSeePlayer)
+            || !sensor.CanSeePlayer
+            || !CombatPhysics.CanMeleeHit(transform, player, attackDistance, meleeVerticalRange))
         {
             ChasePlayer(player);
         }
@@ -119,8 +120,6 @@ public class MeleeEnemyAI : MonoBehaviour
 
     private void AttackPlayer(Transform player)
     {
-        if (!CombatPhysics.CanMeleeHit(transform, player, attackDistance, meleeVerticalRange))
-            return;
         if (Time.time < nextAttackTime)
             return;
         nextAttackTime = Time.time + attackCooldown;

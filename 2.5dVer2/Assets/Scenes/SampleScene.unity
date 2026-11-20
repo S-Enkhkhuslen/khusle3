@@ -948,7 +948,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fe266648680474e4a8b2a9d870ae256d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.3
+      value: -1.0715027
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fe266648680474e4a8b2a9d870ae256d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -960,7 +960,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fe266648680474e4a8b2a9d870ae256d, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.7071068
+      value: -0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fe266648680474e4a8b2a9d870ae256d, type: 3}
       propertyPath: m_LocalRotation.y
@@ -1627,6 +1627,10 @@ MonoBehaviour:
   spawnRadius: 20
   spawnSpacing: 3
   flyingSpawnHeight: 2
+  arrivalHeight: 35
+  arrivalDuration: 1.2
+  signalDuration: 3
+  arrivalStagger: 0.04
   unlockEscapeRocket: 0
 --- !u!1001 &115269658
 PrefabInstance:
@@ -9586,7 +9590,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fe266648680474e4a8b2a9d870ae256d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.3
+      value: -1.0222626
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fe266648680474e4a8b2a9d870ae256d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10104,6 +10108,10 @@ MonoBehaviour:
   spawnRadius: 20
   spawnSpacing: 3
   flyingSpawnHeight: 2
+  arrivalHeight: 35
+  arrivalDuration: 1.2
+  signalDuration: 3
+  arrivalStagger: 0.04
   unlockEscapeRocket: 1
 --- !u!1 &516970524
 GameObject:
@@ -17971,6 +17979,10 @@ MonoBehaviour:
   spawnRadius: 20
   spawnSpacing: 3
   flyingSpawnHeight: 2
+  arrivalHeight: 35
+  arrivalDuration: 1.2
+  signalDuration: 3
+  arrivalStagger: 0.04
   unlockEscapeRocket: 0
 --- !u!1001 &906861653
 PrefabInstance:
@@ -20895,7 +20907,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fe266648680474e4a8b2a9d870ae256d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.3
+      value: -1.2311554
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fe266648680474e4a8b2a9d870ae256d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -21263,6 +21275,10 @@ MonoBehaviour:
   spawnRadius: 20
   spawnSpacing: 3
   flyingSpawnHeight: 2
+  arrivalHeight: 35
+  arrivalDuration: 1.2
+  signalDuration: 3
+  arrivalStagger: 0.04
   unlockEscapeRocket: 0
 --- !u!1 &1267888783
 GameObject:
@@ -23247,7 +23263,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fe266648680474e4a8b2a9d870ae256d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.3
+      value: -1.0715027
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fe266648680474e4a8b2a9d870ae256d, type: 3}
       propertyPath: m_LocalPosition.z

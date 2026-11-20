@@ -38,7 +38,8 @@ public class EnemyHealthBar : MonoBehaviour
 
         float headHeight = bodyCollider != null ? bodyCollider.bounds.max.y : transform.position.y + 1.8f;
         foreach (Renderer body in bodyRenderers)
-            if (body != null && body.enabled)
+            if (body != null && body.enabled
+                && (body is MeshRenderer || body is SkinnedMeshRenderer))
                 headHeight = Mathf.Max(headHeight, body.bounds.max.y);
         canvasRect.position = new Vector3(transform.position.x, headHeight + 0.35f, transform.position.z);
         canvasRect.rotation = view.transform.rotation;

@@ -268,6 +268,13 @@ public sealed class GameAudio : MonoBehaviour
         audio.Play(audio.sounds.field, position, 0.65f, 0.5f, 50);
     }
 
+    public static void GeneratorExploded(Vector3 position)
+    {
+        GameAudio audio = Current;
+        if (audio.gameFinished || audio.rocketActive || audio.paused) return;
+        audio.Play(audio.sounds.boom, position, 0.65f, 1f, 65, 0.8f, 0.9f, 60f);
+    }
+
     public static void RocketReady()
     {
         GameAudio audio = Current;

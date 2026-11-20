@@ -119,7 +119,8 @@ public class RangedEnemyAI : MonoBehaviour
 
         if (isMeleeMode)
         {
-            if (distance > meleeAttackDistance || !sensor.CanSeePlayer)
+            if (distance > meleeAttackDistance || !sensor.CanSeePlayer
+                || !CombatPhysics.CanMeleeHit(transform, player, meleeAttackDistance, meleeVerticalRange))
             {
                 ChasePlayer(player);
             }

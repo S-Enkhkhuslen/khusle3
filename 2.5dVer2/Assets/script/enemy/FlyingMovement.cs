@@ -16,6 +16,7 @@ public class FlyingMovement : MonoBehaviour
 
     public void MoveTowards(Vector3 target, float speed)
     {
+        if (Time.timeScale <= 0f) return;
         ResolveOverlaps();
         Vector3 remaining = Vector3.ClampMagnitude(target - transform.position,
             Mathf.Max(0f, speed) * Time.deltaTime);
@@ -53,6 +54,7 @@ public class FlyingMovement : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (Time.timeScale <= 0f) return;
         // Facing the player can rotate the capsule into a nearby wall.
         ResolveOverlaps();
     }
